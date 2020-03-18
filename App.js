@@ -28,10 +28,15 @@ const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    text: '#000',
     primary: '#000',
     accent: '#fff',
+    text: '#000'
   }
+}
+
+const screenOptions = {
+  animationEnabled: false,
+  gestureEnabled: false
 }
 
 export default function App() {
@@ -42,11 +47,11 @@ export default function App() {
     <PaperProvider theme={theme}>
       <NavigationContainer ref={navRef}>
         <Stack.Navigator initialRouteName='Map' headerMode='none'>
-          <Stack.Screen name='Map' component={MapScreen} />
-          <Stack.Screen name='Profile' component={ProfileScreen} />
+          <Stack.Screen name='Map' component={MapScreen} options={screenOptions} />
+          <Stack.Screen name='Profile' component={ProfileScreen} options={screenOptions} />
         </Stack.Navigator>
       </NavigationContainer>
-      <Menu menuOpen={menuOpen} />
+      <Menu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <MenuToggle menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
     </PaperProvider>
   );

@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image, Dimensions } from 'react-native';
-import { Button } from 'react-native-paper';
+import { StyleSheet, View, Keyboard } from 'react-native';
 import * as Location from 'expo-location';
 import MapView from 'react-native-maps';
+import SearchMap from './SearchMap.js';
 
 export default function MapScreen() {
 
@@ -35,8 +35,12 @@ export default function MapScreen() {
   	<View style={styles.container}>
 	    <MapView 
 	      style={styles.map} 
+	      onPress={Keyboard.dismiss} 
+	      onRegionChange={Keyboard.dismiss} 
+	      rotateEnabled={false} 
 	      initialRegion={currentPosition ? currentPosition : null} 
 	    />
+  		<SearchMap />
 	  </View>
 	);
 }

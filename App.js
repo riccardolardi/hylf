@@ -1,11 +1,12 @@
-import React from 'react';
-import { StyleSheet, Text, View, Image, Dimensions } from 'react-native';
-import { Button } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import * as firebase from 'firebase';
-import * as ImagePicker from 'expo-image-picker';
-import * as Sharing from 'expo-sharing';
+import { navRef } from './components/RootNav.js';
+import Menu from './components/Menu.js';
+import MenuToggle from './components/MenuToggle.js';
 import MapScreen from './components/MapScreen.js';
 import ProfileScreen from './components/ProfileScreen.js';
 
@@ -23,13 +24,30 @@ if (!firebase.apps.length) firebase.initializeApp({
 const db = firebase.database();
 const Stack = createStackNavigator();
 
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    text: '#000',
+    primary: '#000',
+    accent: '#fff',
+  }
+}
+
 export default function App() {
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName='Map'>
-        <Stack.Screen name='Map' component={MapScreen} />
-        <Stack.Screen name='Profile' component={ProfileScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <PaperProvider theme={theme}>
+      <NavigationContainer ref={navRef}>
+        <Stack.Navigator initialRouteName='Map' headerMode='none'>
+          <Stack.Screen name='Map' component={MapScreen} />
+          <Stack.Screen name='Profile' component={ProfileScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+      <Menu menuOpen={menuOpen} />
+      <MenuToggle menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+    </PaperProvider>
   );
 }

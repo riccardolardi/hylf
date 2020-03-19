@@ -3,7 +3,8 @@ import { StyleSheet, Text, View, Image } from 'react-native';
 import * as RootNav from './RootNav.js';
 import * as Font from 'expo-font';
 import * as Animatable from 'react-native-animatable';
-import { List, Button } from 'react-native-paper';
+import { List, Button, Divider } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const styles = {
   menu: {
@@ -28,7 +29,8 @@ const styles = {
 
   },
   menuButtonText: {
-    fontSize: 32
+    fontFamily: 'JosefinSans',
+    fontSize: 32,
   }
 }
 
@@ -49,10 +51,18 @@ export default function Menu(props) {
     <Animatable.View style={[styles.menu, props.menuOpen && styles.menuOpen]} 
       transition={['bottom', 'opacity']} duration={500}>
       <View style={styles.menuButtonList}>
-        <Button icon='map' mode='outlined' onPress={() => navTo('Map')}>Map</Button>
-        <Button icon='account' mode='outlined' onPress={() => navTo('Profile')}>My Profile</Button>
-        <Button icon='help' mode='outlined' onPress={() => navTo('Help')}>Help</Button>
-        <Button icon='information' mode='outlined' onPress={() => navTo('What?')}>What?</Button>
+        <Button uppercase={false} onPress={() => navTo('Map')}>
+          <Icon name='map' size={32}></Icon>
+          <Text style={styles.menuButtonText}> Map</Text>
+        </Button>
+        <Button uppercase={false} onPress={() => navTo('Profile')}>
+          <Icon name='user' size={32}></Icon>
+          <Text style={styles.menuButtonText}> My Profile</Text>
+        </Button>
+        <Button uppercase={false} onPress={() => navTo('Help')}>
+          <Icon name='question' size={32}></Icon>
+          <Text style={styles.menuButtonText}> Help</Text>
+        </Button>
       </View>
     </Animatable.View>
   );

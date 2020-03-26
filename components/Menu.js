@@ -46,15 +46,15 @@ export default function Menu(props) {
 
   const [fontLoaded, setFontLoaded] = React.useState(false);
 
-  React.useEffect(async () => {
-    await Font.loadAsync({
+  React.useEffect(() => {
+    Font.loadAsync({
       'JosefinSans': require('../assets/fonts/JosefinSans-Medium.ttf')
-    });
-    setFontLoaded(true);
+    }).then(() => setFontLoaded(true));
   }, []);
 
   const navTo = (location) => {
     props.setMenuOpen(false);
+    if (props.authState && location === 'Login') location = 'Profile';
     RootNav.navigate(location);
   }
 
@@ -68,7 +68,7 @@ export default function Menu(props) {
             {fontLoaded && <Text style={styles.menuButtonText}> Map</Text>}
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuButton} uppercase={false} onPress={() => navTo('Profile')}>
+        <TouchableOpacity style={styles.menuButton} uppercase={false} onPress={() => navTo('Login')}>
           <View style={styles.menuButtonView}>
             <Icon style={styles.menuButtonIcon} name='user' size={56} />
             {fontLoaded && <Text style={styles.menuButtonText}> My Profile</Text>}

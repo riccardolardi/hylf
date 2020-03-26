@@ -10,7 +10,6 @@ import MenuToggle from './components/MenuToggle.js';
 import MapScreen from './components/MapScreen.js';
 import ProfileScreen from './components/ProfileScreen.js';
 import LoginScreen from './components/LoginScreen.js';
-import RegisterScreen from './components/RegisterScreen.js';
 
 if (!firebase.apps.length) firebase.initializeApp({
   apiKey: 'AIzaSyDGcbINBMQ8tF-rL1bVVhzyONH_u7W9M24',
@@ -48,6 +47,7 @@ const screenOptions = {
 
 export default function App() {
 
+  const [authState, setAuthState] = React.useState(null);
   const [menuOpen, setMenuOpen] = React.useState(false);
 
   return (
@@ -55,18 +55,17 @@ export default function App() {
       <NavigationContainer ref={navRef}>
         <Stack.Navigator initialRouteName='Map' headerMode='none'>
           <Stack.Screen name='Map' component={MapScreen} options={screenOptions} />
-          <Stack.Screen name='Profile' options={screenOptions}>
-            {props => <ProfileScreen {...props} firebase={firebase} />}
-          </Stack.Screen>
           <Stack.Screen name='Login' options={screenOptions}>
-            {props => <LoginScreen {...props} firebase={firebase} />}
+            {props => <LoginScreen {...props} authState={authState} 
+              setAuthState={setAuthState} firebase={firebase} />}
           </Stack.Screen>
-          <Stack.Screen name='Register' options={screenOptions}>
-            {props => <RegisterScreen {...props} firebase={firebase} />}
+          <Stack.Screen name='Profile' options={{...screenOptions}}>
+            {props => <ProfileScreen {...props} authState={authState} 
+              setAuthState={setAuthState} firebase={firebase} />}
           </Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>
-      <Menu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <Menu authState={authState} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <MenuToggle menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
     </PaperProvider>
   );

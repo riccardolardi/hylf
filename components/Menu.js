@@ -1,9 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image } from 'react-native';
+import { Text, View, TouchableOpacity } from 'react-native';
 import * as RootNav from './RootNav.js';
 import * as Font from 'expo-font';
 import * as Animatable from 'react-native-animatable';
-import { List, Button, Divider } from 'react-native-paper';
+import { List, Divider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const styles = {
@@ -23,10 +23,18 @@ const styles = {
     left: '10%',
     alignItems: 'flex-start',
     justifyContent: 'space-evenly',
-    height: '90%'
+    height: '100%'
   },
   menuButton: {
 
+  },
+  menuButtonView: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  menuButtonIcon: {
+    marginTop: -10,
+    marginRight: 10
   },
   menuButtonText: {
     fontFamily: 'JosefinSans',
@@ -36,10 +44,13 @@ const styles = {
 
 export default function Menu(props) {
 
-  React.useEffect(() => {
-    Font.loadAsync({
+  const [fontLoaded, setFontLoaded] = React.useState(false);
+
+  React.useEffect(async () => {
+    await Font.loadAsync({
       'JosefinSans': require('../assets/fonts/JosefinSans-Medium.ttf')
     });
+    setFontLoaded(true);
   }, []);
 
   const navTo = (location) => {
@@ -51,18 +62,24 @@ export default function Menu(props) {
     <Animatable.View style={[styles.menu, props.menuOpen && styles.menuOpen]} 
       transition={['bottom', 'opacity']} duration={500}>
       <View style={styles.menuButtonList}>
-        <Button uppercase={false} onPress={() => navTo('Map')}>
-          <Icon name='map' size={32}></Icon>
-          <Text style={styles.menuButtonText}> Map</Text>
-        </Button>
-        <Button uppercase={false} onPress={() => navTo('Profile')}>
-          <Icon name='user' size={32}></Icon>
-          <Text style={styles.menuButtonText}> My Profile</Text>
-        </Button>
-        <Button uppercase={false} onPress={() => navTo('Help')}>
-          <Icon name='question' size={32}></Icon>
-          <Text style={styles.menuButtonText}> Help</Text>
-        </Button>
+        <TouchableOpacity style={styles.menuButton} uppercase={false} onPress={() => navTo('Map')}>
+          <View style={styles.menuButtonView}>
+            <Icon style={styles.menuButtonIcon} name='map' size={56} />
+            {fontLoaded && <Text style={styles.menuButtonText}> Map</Text>}
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuButton} uppercase={false} onPress={() => navTo('Profile')}>
+          <View style={styles.menuButtonView}>
+            <Icon style={styles.menuButtonIcon} name='user' size={56} />
+            {fontLoaded && <Text style={styles.menuButtonText}> My Profile</Text>}
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuButton} uppercase={false} onPress={() => navTo('Help')}>
+          <View style={styles.menuButtonView}>
+            <Icon style={styles.menuButtonIcon} name='question' size={56} />
+            {fontLoaded && <Text style={styles.menuButtonText}> Help</Text>}
+          </View>
+        </TouchableOpacity>
       </View>
     </Animatable.View>
   );

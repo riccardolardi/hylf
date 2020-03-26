@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Keyboard, TouchableWithoutFeedback, 
   Text, View, Image } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
-import * as ImagePicker from 'expo-image-picker';
+import * as RootNav from './RootNav.js';
 import logoSrc from './../assets/logo.png';
 
 const styles = StyleSheet.create({
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   }
 })
 
-export default function ProfileScreen(props) {
+export default function LoginScreen(props) {
 
 	const [authState, setAuthState] = React.useState(null);
 	const [userEmail, setUserEmail] = React.useState(null);
@@ -86,7 +86,7 @@ export default function ProfileScreen(props) {
 		      <Button onPress={() => login()}>Sign in</Button>
           <View style={styles.registerView}>
             <Text style={styles.registerText}>Not a member yet?</Text>
-            <Button onPress={() => register()}>Register</Button>
+            <Button onPress={() => RootNav.navigate('Register')}>Register</Button>
           </View>
       	</View>
       </TouchableWithoutFeedback>

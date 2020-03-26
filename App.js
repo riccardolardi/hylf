@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -9,6 +9,8 @@ import Menu from './components/Menu.js';
 import MenuToggle from './components/MenuToggle.js';
 import MapScreen from './components/MapScreen.js';
 import ProfileScreen from './components/ProfileScreen.js';
+import LoginScreen from './components/LoginScreen.js';
+import RegisterScreen from './components/RegisterScreen.js';
 
 if (!firebase.apps.length) firebase.initializeApp({
   apiKey: 'AIzaSyDGcbINBMQ8tF-rL1bVVhzyONH_u7W9M24',
@@ -30,7 +32,12 @@ const theme = {
     ...DefaultTheme.colors,
     primary: '#000',
     accent: '#fff',
-    text: '#000'
+    text: '#000',
+    background: '#fff',
+    surface: '#fff',
+    error: '#ff0000',
+    onBackground: '#000000',
+    onSurface: '#000000',
   }
 }
 
@@ -41,14 +48,22 @@ const screenOptions = {
 
 export default function App() {
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer ref={navRef}>
         <Stack.Navigator initialRouteName='Map' headerMode='none'>
           <Stack.Screen name='Map' component={MapScreen} options={screenOptions} />
-          <Stack.Screen name='Profile' component={ProfileScreen} options={screenOptions} />
+          <Stack.Screen name='Profile' options={screenOptions}>
+            {props => <ProfileScreen {...props} firebase={firebase} />}
+          </Stack.Screen>
+          <Stack.Screen name='Login' options={screenOptions}>
+            {props => <LoginScreen {...props} firebase={firebase} />}
+          </Stack.Screen>
+          <Stack.Screen name='Register' options={screenOptions}>
+            {props => <RegisterScreen {...props} firebase={firebase} />}
+          </Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>
       <Menu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />

@@ -23,8 +23,17 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "android": {
+      "package": "ch.hylf.app",
+    },
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "ch.hylf.app",
+      "supportsTablet": true,
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.801865186127-vikoklfh4b1a8pv087k2gudee7fc7dv2"
+        }
+      }
     },
     "packagerOpts": {
       "config": "metro.config.js",

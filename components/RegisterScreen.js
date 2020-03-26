@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
   field: {
   	marginBottom: 16
   },
-  loginError: {
+  registerError: {
   	color: 'red',
   	textAlign: 'center'
   },
@@ -36,35 +36,26 @@ const styles = StyleSheet.create({
   }
 })
 
-export default function ProfileScreen(props) {
+export default function RegisterScreen(props) {
 
 	const [authState, setAuthState] = React.useState(null);
 	const [userEmail, setUserEmail] = React.useState(null);
 	const [userPassword, setUserPassword] = React.useState(null);
-	const [loginError, setLoginError] = React.useState(null);
+	const [registerError, setRegisterError] = React.useState(null);
 
   React.useEffect(() => {
 
   }, []);
 
   const register = () => {
-  	if (!userEmail || !userPassword) return;
+    if (!userEmail || !userPassword) {
+      setRegisterError('Please fill in both email and password');
+      return;
+    }
   	props.firebase.auth().createUserWithEmailAndPassword(userEmail, userPassword)
   	.then(result => console.log(result))
   	.catch(error => {
-  		setLoginError(error.message);
-  	});
-  }
-
-  const login = () => {
-  	if (!userEmail || !userPassword) {
-      setLoginError('Please fill in both email and password');
-      return;
-    }
-  	props.firebase.auth().signInWithEmailAndPassword(userEmail, userPassword)
-  	.then(result => console.log(result))
-  	.catch(error => {
-  		setLoginError(error.message);
+  		setRegisterError(error.message);
   	});
   }
 
@@ -73,21 +64,16 @@ export default function ProfileScreen(props) {
     	<TouchableWithoutFeedback style={styles.touchable} 
     		onPress={Keyboard.dismiss} accessible={false}>
     		<View>
-          <Image source={logoSrc} style={styles.logo} />
-		    	<Text style={[styles.loginError, styles.field]}>{loginError || ' '}</Text>
+		    	<Text style={[styles.registerError, styles.field]}>{registerError || ' '}</Text>
 		    	<TextInput style={styles.field} value={userEmail} placeholder='Email' 
 		    		keyboardType='email-address' autoCompleteType='email' 
 		    		onChangeText={email => setUserEmail(email)} enablesReturnKeyAutomatically 
-            onSubmitEditing={() => login()} />
+            onSubmitEditing={() => register()} />
 		    	<TextInput style={styles.field} value={userPassword} placeholder='Password' 
 		    		onChangeText={password => setUserPassword(password)} enablesReturnKeyAutomatically
 		    		autoCompleteType='password' textContentType='password' secureTextEntry 
-            onSubmitEditing={() => login()} />
-		      <Button onPress={() => login()}>Sign in</Button>
-          <View style={styles.registerView}>
-            <Text style={styles.registerText}>Not a member yet?</Text>
-            <Button onPress={() => register()}>Register</Button>
-          </View>
+            onSubmitEditing={() => register()} />
+		      <Button onPress={() => register()}>Register</Button>
       	</View>
       </TouchableWithoutFeedback>
     </View>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Keyboard, TouchableWithoutFeedback, TouchableOpacity, 
   Text, View, Image } from 'react-native';
+import * as Font from 'expo-font';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Button, TextInput } from 'react-native-paper';
 import * as Animatable from 'react-native-animatable';
@@ -10,19 +11,17 @@ import logoSrc from './../assets/logo.png';
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: 'center',
     padding: 32,
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
+    paddingTop: 64,
+    paddingBottom: 64 * 2
   },
   image: {
     width: 120,
     height: 120,
     borderRadius: 120,
     backgroundColor: '#dadada'
-  },
-  fill: {
-    ...StyleSheet.absoluteFill
   },
   field: {
   	marginBottom: 16
@@ -35,6 +34,12 @@ const styles = StyleSheet.create({
     color: 'red',
     textAlign: 'center'
   },
+  title: {
+    fontFamily: 'JosefinSans',
+    fontSize: 32,
+    lineHeight: 36,
+    textAlign: 'center'
+  }
 })
 
 export default function ProfileScreen(props) {
@@ -47,12 +52,18 @@ export default function ProfileScreen(props) {
   const [userPhone, setUserPhone] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [profileError, setProfileError] = React.useState(null);
+  const [fontLoaded, setFontLoaded] = React.useState(false);
+
+  const scrollView = React.useRef(null);
 
   const navigation = useNavigation();
 
-  React.useEffect(() => {
+  const loadData = async () => {
+    setProfileError(null);
+    setIsLoading(true);
     const user = props.firebase.auth().currentUser;
-    props.firebase.database().ref('/users/' + user.uid).once('value').then(snapshot => {
+    if (!user) return;
+    await props.firebase.database().ref('/users/' + user.uid).once('value').then(snapshot => {
       setUserName(snapshot.val().name || null);
       setUserAddress(snapshot.val().address || null);
       setUserZIP(snapshot.val().zip || null);
@@ -60,11 +71,16 @@ export default function ProfileScreen(props) {
       setUserPhone(snapshot.val().phone || null);
     });
     const storageRef = props.firebase.storage().ref();
-    const userImageRef = storageRef.child(`profileImages/${user.uid}.jpg`);
-    userImageRef.getDownloadURL().then(url => {
-      setUserImage(url);
-    }).catch(error => setProfileError(error));
-  }, []);
+    let userImageRef = storageRef.child(`profileImages/${user.uid}`);
+    await userImageRef.listAll().then(async result => {
+      if (!result.items.length) return;
+      userImageRef = storageRef.child(`profileImages/${user.uid}/${user.uid}.jpg`);
+      await userImageRef.getDownloadURL().then(url => {
+        setUserImage(url);
+      }).catch(error => setProfileError(error.message));
+    });
+    setIsLoading(false);
+  }
 
   const getPermissionAsync = async () => {
     if (Constants.platform.ios) {
@@ -86,37 +102,43 @@ export default function ProfileScreen(props) {
     if (!result.cancelled) setUserImage(result.uri);
   };
 
-  const save = () => {
+  const save = async () => {
     const user = props.firebase.auth().currentUser;
     setIsLoading(true);
     setProfileError(null);
-    user.updateProfile({
+    await user.updateProfile({
       displayName: userName,
       photoURL: userImage
-    }).then(result => {
-      props.firebase.database().ref('/users/' + user.uid).set({
-        name: userName,
-        address: userAddress,
-        zip: userZIP,
-        city: userCity,
-        phone: userPhone
-      }, error => {
-        setIsLoading(false);
-        if (error) setProfileError(error.message);
-      });
-      if (userImage) {
-        const storageRef = props.firebase.storage().ref();
-        const userImageRef = storageRef.child(`profileImages/${user.uid}.jpg`);
-        uriToBlob(userImage).then(blob => {
-          userImageRef.put(blob, {contentType: 'image/jpeg'}).then(() => {
-            blob.close();
-          });
-        });
-      }
     }).catch(error => {
       setIsLoading(false);
       setProfileError(error.message);
+      return;
     });
+    await props.firebase.database().ref('/users/' + user.uid).set({
+      name: userName,
+      address: userAddress,
+      zip: userZIP,
+      city: userCity,
+      phone: userPhone
+    }).catch(error => {
+      setIsLoading(false);
+      setProfileError(error.message);
+      return;
+    });
+    if (userImage) {
+      const storageRef = props.firebase.storage().ref();
+      const userImageRef = storageRef.child(`profileImages/${user.uid}/${user.uid}.jpg`);
+      await uriToBlob(userImage).then(blob => {
+        userImageRef.put(blob, {contentType: 'image/jpeg'}).then(() => {
+          blob.close();
+        });
+      }).catch(error => {
+        setIsLoading(false);
+        setProfileError(error.message);
+        return;
+      });
+    }
+    setIsLoading(false);
   }
 
   const logout = () => {
@@ -124,7 +146,6 @@ export default function ProfileScreen(props) {
     setProfileError(null);
     props.firebase.auth().signOut().then(() => {
       setIsLoading(false);
-      navigation.setOptions({animationEnabled: true});
       navigation.navigate('Login');
     }).catch(error => {
       setIsLoading(false);
@@ -143,11 +164,30 @@ export default function ProfileScreen(props) {
     });
   }
 
+  React.useEffect(() => {
+    scrollView.current.scrollToPosition(0, 0);
+    loadData();
+    Font.loadAsync({
+      'JosefinSans': require('../assets/fonts/JosefinSans-Medium.ttf')
+    }).then(() => setFontLoaded(true));
+    const unsubscribe = navigation.addListener('focus', () => {
+      scrollView.current.scrollToPosition(0, 0);
+      loadData();
+    });
+    return unsubscribe;
+  }, []);
+
+  React.useEffect(() => {
+    props.setShowLoadOL(isLoading);
+  }, [isLoading]);
+
   return (
     <View style={{flex: 1}}>
     	<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-    		<KeyboardAwareScrollView keyboardOpeningTime={50} 
+    		<KeyboardAwareScrollView ref={scrollView} keyboardOpeningTime={50} 
           contentContainerStyle={styles.container}>
+          {fontLoaded && <Text style={[styles.title, styles.field]}>Hello, {userName || 'unknown hylfer!'}!</Text>}
+          <Text style={styles.field}>This is your profile. You can set your personal details which will gain you trustworthyness on the platform.</Text>
           <View style={{alignItems: 'center', marginBottom: 16}}>
             <TouchableOpacity onPress={() => changeUserImage()}>
               <Image style={styles.image} source={userImage ? {uri: userImage} : 
@@ -156,26 +196,29 @@ export default function ProfileScreen(props) {
           </View>
           {profileError && <Text style={[styles.profileError, styles.field]}>{profileError}</Text>}
           <TextInput mode='outlined' style={styles.field} value={userName} placeholder='Name' 
-            keyboardType='default' autoCompleteType='name' 
-            onChangeText={name => setUserName(name)} enablesReturnKeyAutomatically />
+            keyboardType='default' autoCompleteType='name' textContentType='name' 
+            onChangeText={name => setUserName(name)} enablesReturnKeyAutomatically 
+            disabled={isLoading} />
           <TextInput mode='outlined' style={styles.field} value={userAddress} placeholder='Address' 
-            keyboardType='default' autoCompleteType='street-address' 
-            onChangeText={address => setUserAddress(address)} enablesReturnKeyAutomatically />
+            keyboardType='default' autoCompleteType='street-address' textContentType='fullStreetAddress' 
+            onChangeText={address => setUserAddress(address)} enablesReturnKeyAutomatically 
+            disabled={isLoading} />
           <TextInput mode='outlined' style={styles.field} value={userZIP} placeholder='ZIP' 
-            keyboardType='numeric' autoCompleteType='street-address' 
-            onChangeText={zip => setUserZIP(zip)} enablesReturnKeyAutomatically />
+            keyboardType='numeric' autoCompleteType='postal-code' textContentType='postalCode' 
+            onChangeText={zip => setUserZIP(zip)} enablesReturnKeyAutomatically 
+            disabled={isLoading} />
           <TextInput mode='outlined' style={styles.field} value={userCity} placeholder='City' 
-            keyboardType='default' 
-            onChangeText={city => setUserCity(city)} enablesReturnKeyAutomatically />
+            keyboardType='default' textContentType='addressCity' 
+            onChangeText={city => setUserCity(city)} enablesReturnKeyAutomatically 
+            disabled={isLoading} />
           <TextInput mode='outlined' style={styles.field} value={userPhone} placeholder='Phone' 
-            keyboardType='numeric' autoCompleteType='tel' 
-            onChangeText={phone => setUserPhone(phone)} enablesReturnKeyAutomatically />
+            keyboardType='numeric' textContentType='telephoneNumber' autoCompleteType='tel' 
+            onChangeText={phone => setUserPhone(phone)} enablesReturnKeyAutomatically 
+            disabled={isLoading} />
           <Button icon='check' style={styles.field} color='#2da84a' mode='contained' 
-            disabled={isLoading} loading={isLoading} 
-            onPress={() => save()}>Save</Button>
+            disabled={isLoading} onPress={() => save()}>Save</Button>
           <Button icon='logout' color='#ed5247' mode='contained' 
-            disabled={isLoading} loading={isLoading} 
-            onPress={() => logout()}>Logout</Button>
+            disabled={isLoading} onPress={() => logout()}>Logout</Button>
         </KeyboardAwareScrollView>
       </TouchableWithoutFeedback>
     </View>

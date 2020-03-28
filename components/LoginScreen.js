@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Keyboard, TouchableWithoutFeedback, 
   Text, View, Image, KeyboardAvoidingView } from 'react-native';
+import * as Font from 'expo-font';
 import { Button, TextInput } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import logoSrc from './../assets/logo.png';
@@ -38,6 +39,12 @@ const styles = StyleSheet.create({
   registerText: {
     marginTop: 16,
     textAlign: 'center'
+  },
+  title: {
+    fontFamily: 'JosefinSans',
+    fontSize: 32,
+    lineHeight: 36,
+    textAlign: 'center'
   }
 })
 
@@ -47,12 +54,9 @@ export default function LoginScreen(props) {
 	const [userPassword, setUserPassword] = React.useState(null);
 	const [loginError, setLoginError] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [fontLoaded, setFontLoaded] = React.useState(false);
 
   const navigation = useNavigation();
-
-  React.useEffect(() => {
-
-  }, []);
 
   const register = () => {
   	props.firebase.auth().createUserWithEmailAndPassword(userEmail, userPassword)
@@ -87,29 +91,35 @@ export default function LoginScreen(props) {
   }
 
   const handleLoginSuccess = (data) => {
-    setIsLoading(false);
-    navigation.setOptions({animationEnabled: true});
     navigation.navigate('Profile');
   }
 
   const handleRegisterSuccess = (data) => {
-    setIsLoading(false);
-    navigation.setOptions({animationEnabled: true});
     navigation.navigate('Profile');
   }
+
+  React.useEffect(() => {
+    props.setShowLoadOL(isLoading);
+  }, [isLoading]);
+
+  React.useEffect(() => {
+    Font.loadAsync({
+      'JosefinSans': require('../assets/fonts/JosefinSans-Medium.ttf')
+    }).then(() => setFontLoaded(true));
+  }, []);
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior='padding' enabled>
     	<TouchableWithoutFeedback style={styles.touchable} 
     		onPress={Keyboard.dismiss} accessible={false}>
     		<View>
-          <Image source={logoSrc} style={styles.logo} />
+          {fontLoaded && <Text style={[styles.title, styles.field]}>Login to hylf</Text>}
           <Text style={[styles.intro, styles.field]}>Welcome!{'\n\n'}Please login or register to access or setup your profile and offer new services.</Text>
 		    	{loginError && <Text style={[styles.loginError, styles.field]}>{loginError}</Text>}
 		    	<TextInput mode='outlined' style={styles.field} value={userEmail} placeholder='Email' 
-		    		keyboardType='email-address' autoCompleteType='email' disabled={isLoading} 
-		    		onChangeText={email => setUserEmail(email)} enablesReturnKeyAutomatically 
-            onSubmitEditing={() => login()} blurOnSubmit={true} autoCapitalize='none' />
+		    		keyboardType='email-address' autoCompleteType='email' textContentType='emailAddress' 
+            onChangeText={email => setUserEmail(email)} enablesReturnKeyAutomatically 
+            onSubmitEditing={() => login()} blurOnSubmit={true} autoCapitalize='none' disabled={isLoading} />
 		    	<TextInput mode='outlined' style={styles.field} value={userPassword} placeholder='Password' 
 		    		onChangeText={password => setUserPassword(password)} enablesReturnKeyAutomatically
 		    		autoCompleteType='password' textContentType='password' secureTextEntry 

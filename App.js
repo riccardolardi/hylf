@@ -10,6 +10,7 @@ import MenuToggle from './components/MenuToggle.js';
 import MapScreen from './components/MapScreen.js';
 import ProfileScreen from './components/ProfileScreen.js';
 import LoginScreen from './components/LoginScreen.js';
+import LoadOL from './components/LoadOL.js';
 
 if (!firebase.apps.length) firebase.initializeApp({
   apiKey: 'AIzaSyDGcbINBMQ8tF-rL1bVVhzyONH_u7W9M24',
@@ -49,30 +50,32 @@ export default function App() {
   const [authState, setAuthState] = React.useState(null);
   const [userData, setUserData] = React.useState(null);
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const [showLoadOL, setShowLoadOL] = React.useState(false);
 
   firebase.auth().onAuthStateChanged(user => {
     setAuthState(user ? true : false);
     setUserData(user);
-    console.log(user);
   });
 
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer ref={navRef}>
         <Stack.Navigator initialRouteName='Map' headerMode='none'>
-          <Stack.Screen name='Map' component={MapScreen} options={screenOptions} />
+          <Stack.Screen name='Map' component={MapScreen} 
+            options={screenOptions} setShowLoadOL={setShowLoadOL} />
           <Stack.Screen name='Login' options={screenOptions}>
             {props => <LoginScreen {...props} authState={authState} 
-              userData={userData} firebase={firebase} />}
+              userData={userData} firebase={firebase} setShowLoadOL={setShowLoadOL} />}
           </Stack.Screen>
-          <Stack.Screen name='Profile' options={{...screenOptions}}>
+          <Stack.Screen name='Profile' options={screenOptions}>
             {props => <ProfileScreen {...props} authState={authState} 
-              userData={userData} firebase={firebase} />}
+              userData={userData} firebase={firebase} setShowLoadOL={setShowLoadOL} />}
           </Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>
       <Menu authState={authState} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <MenuToggle menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <LoadOL show={showLoadOL} />
     </PaperProvider>
   );
 }

@@ -24,7 +24,7 @@
       "**/*"
     ],
     "android": {
-      "package": "ch.hylf.app",
+      "package": "ch.hylf.app"
     },
     "ios": {
       "bundleIdentifier": "ch.hylf.app",

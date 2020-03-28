@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Keyboard, TouchableWithoutFeedback, 
   Text, View, Image, KeyboardAvoidingView } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
-import * as RootNav from './RootNav.js';
+import { useNavigation } from '@react-navigation/native';
 import logoSrc from './../assets/logo.png';
 
 const styles = StyleSheet.create({
@@ -48,6 +48,8 @@ export default function LoginScreen(props) {
 	const [loginError, setLoginError] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
+  const navigation = useNavigation();
+
   React.useEffect(() => {
 
   }, []);
@@ -85,15 +87,15 @@ export default function LoginScreen(props) {
   }
 
   const handleLoginSuccess = (data) => {
-    props.setAuthState(true);
     setIsLoading(false);
-    RootNav.navigate('Profile');
+    navigation.setOptions({animationEnabled: true});
+    navigation.navigate('Profile');
   }
 
   const handleRegisterSuccess = (data) => {
-    props.setAuthState(true);
     setIsLoading(false);
-    RootNav.navigate('Profile');
+    navigation.setOptions({animationEnabled: true});
+    navigation.navigate('Profile');
   }
 
   return (

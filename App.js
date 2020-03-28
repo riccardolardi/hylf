@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import * as firebase from 'firebase';
 import { navRef } from './components/RootNav.js';
@@ -22,7 +22,6 @@ if (!firebase.apps.length) firebase.initializeApp({
   measurementId: 'G-C0YXBMEK07'
 });
 
-const db = firebase.database();
 const Stack = createStackNavigator();
 
 const theme = {
@@ -48,7 +47,14 @@ const screenOptions = {
 export default function App() {
 
   const [authState, setAuthState] = React.useState(null);
+  const [userData, setUserData] = React.useState(null);
   const [menuOpen, setMenuOpen] = React.useState(false);
+
+  firebase.auth().onAuthStateChanged(user => {
+    setAuthState(user ? true : false);
+    setUserData(user);
+    console.log(user);
+  });
 
   return (
     <PaperProvider theme={theme}>
@@ -57,11 +63,11 @@ export default function App() {
           <Stack.Screen name='Map' component={MapScreen} options={screenOptions} />
           <Stack.Screen name='Login' options={screenOptions}>
             {props => <LoginScreen {...props} authState={authState} 
-              setAuthState={setAuthState} firebase={firebase} />}
+              userData={userData} firebase={firebase} />}
           </Stack.Screen>
           <Stack.Screen name='Profile' options={{...screenOptions}}>
             {props => <ProfileScreen {...props} authState={authState} 
-              setAuthState={setAuthState} firebase={firebase} />}
+              userData={userData} firebase={firebase} />}
           </Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>

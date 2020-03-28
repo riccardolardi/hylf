@@ -2,24 +2,25 @@ import React from 'react';
 import { StyleSheet, Keyboard, TouchableWithoutFeedback, 
   Text, View, Image, KeyboardAvoidingView } from 'react-native';
 import * as Font from 'expo-font';
+import LottieView from 'lottie-react-native';
 import { Button, TextInput } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import logoSrc from './../assets/logo.png';
+
+const scapeSrc = require('../assets/lottie/scape.json');
 
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     padding: 32,
     backgroundColor: '#fff',
+    marginTop: -120,
     ...StyleSheet.absoluteFill
   },
   touchable: {
     ...StyleSheet.absoluteFill
   },
-  logo: {
-    width: '100%',
-    height: '30%',
-    resizeMode: 'contain'
+  inner: {
+    
   },
   intro: {
     paddingLeft: 16,
@@ -45,6 +46,10 @@ const styles = StyleSheet.create({
     fontSize: 32,
     lineHeight: 36,
     textAlign: 'center'
+  },
+  lottie: {
+    width: '80%',
+    alignSelf: 'center'
   }
 })
 
@@ -61,20 +66,15 @@ export default function LoginScreen(props) {
   const register = () => {
   	props.firebase.auth().createUserWithEmailAndPassword(userEmail, userPassword)
   	.then(result => handleRegisterSuccess(result))
-  	.catch(error => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-  		setLoginError(errorMessage);
-      setIsLoading(false);
-  	});
+  	.catch(error => actionFail(error.message));
   }
 
   const login = () => {
+    Keyboard.dismiss();
   	if (!userEmail || !userPassword) {
       setLoginError('Please fill in both email and password');
       return;
     }
-    setLoginError(null);
     setIsLoading(true);
   	props.firebase.auth().signInWithEmailAndPassword(userEmail, userPassword)
   	.then(result => handleLoginSuccess(result))
@@ -85,9 +85,20 @@ export default function LoginScreen(props) {
         register();
         return;
       }
-  		setLoginError(errorMessage);
-      setIsLoading(false);
+  		actionFail(errorMessage);
   	});
+  }
+
+  const actionSuccess = () => {
+    setLoginError(null);
+    setIsLoading(false);
+    props.setShowLoadOL('success');
+  }
+
+  const actionFail = (error) => {
+    setLoginError(error);
+    setIsLoading(false);
+    props.setShowLoadOL('fail');
   }
 
   const handleLoginSuccess = (data) => {
@@ -99,7 +110,10 @@ export default function LoginScreen(props) {
   }
 
   React.useEffect(() => {
-    props.setShowLoadOL(isLoading);
+    if (isLoading) {
+      props.setShowLoadOL(true);
+      setLoginError(null);
+    }
   }, [isLoading]);
 
   React.useEffect(() => {
@@ -112,15 +126,16 @@ export default function LoginScreen(props) {
     <KeyboardAvoidingView style={styles.container} behavior='padding' enabled>
     	<TouchableWithoutFeedback style={styles.touchable} 
     		onPress={Keyboard.dismiss} accessible={false}>
-    		<View>
+    		<View style={styles.inner}>
+          <LottieView style={styles.lottie} source={scapeSrc} autoPlay loop />
           {fontLoaded && <Text style={[styles.title, styles.field]}>Login to hylf</Text>}
           <Text style={[styles.intro, styles.field]}>Welcome!{'\n\n'}Please login or register to access or setup your profile and offer new services.</Text>
 		    	{loginError && <Text style={[styles.loginError, styles.field]}>{loginError}</Text>}
-		    	<TextInput mode='outlined' style={styles.field} value={userEmail} placeholder='Email' 
+		    	<TextInput mode='outlined' style={styles.field} value={userEmail} label='Email' 
 		    		keyboardType='email-address' autoCompleteType='email' textContentType='emailAddress' 
             onChangeText={email => setUserEmail(email)} enablesReturnKeyAutomatically 
             onSubmitEditing={() => login()} blurOnSubmit={true} autoCapitalize='none' disabled={isLoading} />
-		    	<TextInput mode='outlined' style={styles.field} value={userPassword} placeholder='Password' 
+		    	<TextInput mode='outlined' style={styles.field} value={userPassword} label='Password' 
 		    		onChangeText={password => setUserPassword(password)} enablesReturnKeyAutomatically
 		    		autoCompleteType='password' textContentType='password' secureTextEntry 
             onSubmitEditing={() => login()} blurOnSubmit={true} disabled={isLoading} />

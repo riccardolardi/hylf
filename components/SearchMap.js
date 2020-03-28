@@ -12,15 +12,12 @@ export default function SearchMap() {
 			top: 32,
 			width: '100%',
 			padding: 16
-		},
-		searchbar: {
-			
 		}
 	}
 
   return (
     <View style={styles.view}>
-			<Searchbar style={styles.searchbar} 
+			<Searchbar 
         placeholder='Search' 
         onChangeText={query => setSearchQuery(query)} 
         value={searchQuery} blurOnSubmit={true} 

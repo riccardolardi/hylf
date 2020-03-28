@@ -41,35 +41,38 @@ const theme = {
 }
 
 const screenOptions = {
-  animationEnabled: false,
+  animationEnabled: true,
   gestureEnabled: false
 }
 
 export default function App() {
 
   const [authState, setAuthState] = React.useState(null);
-  const [userData, setUserData] = React.useState(null);
+  const [localUserData, setLocalUserData] = React.useState(null);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [showLoadOL, setShowLoadOL] = React.useState(false);
 
   firebase.auth().onAuthStateChanged(user => {
     setAuthState(user ? true : false);
-    setUserData(user);
   });
 
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer ref={navRef}>
         <Stack.Navigator initialRouteName='Map' headerMode='none'>
-          <Stack.Screen name='Map' component={MapScreen} 
-            options={screenOptions} setShowLoadOL={setShowLoadOL} />
+          <Stack.Screen name='Map' options={screenOptions}>
+            {props => <MapScreen {...props} authState={authState} setMenuOpen={setMenuOpen} 
+              localUserData={localUserData} firebase={firebase} setShowLoadOL={setShowLoadOL} />}
+          </Stack.Screen>
           <Stack.Screen name='Login' options={screenOptions}>
-            {props => <LoginScreen {...props} authState={authState} 
-              userData={userData} firebase={firebase} setShowLoadOL={setShowLoadOL} />}
+            {props => <LoginScreen {...props} authState={authState} setLocalUserData={setLocalUserData} 
+              localUserData={localUserData} firebase={firebase} setShowLoadOL={setShowLoadOL} 
+              setMenuOpen={setMenuOpen} />}
           </Stack.Screen>
           <Stack.Screen name='Profile' options={screenOptions}>
-            {props => <ProfileScreen {...props} authState={authState} 
-              userData={userData} firebase={firebase} setShowLoadOL={setShowLoadOL} />}
+            {props => <ProfileScreen {...props} authState={authState} setLocalUserData={setLocalUserData} 
+              localUserData={localUserData} firebase={firebase} setShowLoadOL={setShowLoadOL} 
+              setMenuOpen={setMenuOpen} />}
           </Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>

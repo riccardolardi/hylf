@@ -1,17 +1,17 @@
 import React from 'react';
-import { Text, View, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import * as RootNav from './RootNav.js';
 import * as Font from 'expo-font';
 import * as Animatable from 'react-native-animatable';
-import { List, Divider } from 'react-native-paper';
+import { List, Divider, FAB } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const styles = {
-  menu: {
+  container: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-    backgroundColor: 'white',
+    backgroundColor: 'transparent',
     opacity: 0,
     bottom: '-100%'
   },
@@ -19,26 +19,20 @@ const styles = {
     opacity: 1,
     bottom: '0%'
   },
+  inner: {
+    flex: 1
+  },
   menuButtonList: {
-    left: '10%',
-    alignItems: 'flex-start',
-    justifyContent: 'space-evenly',
-    height: '100%'
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row'
   },
   menuButton: {
-
+    margin: 16
   },
-  menuButtonView: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  menuButtonIcon: {
-    marginTop: -10,
-    marginRight: 10
-  },
-  menuButtonText: {
-    fontFamily: 'JosefinSans',
-    fontSize: 32,
+  spacer: {
+    flex: 1
   }
 }
 
@@ -59,28 +53,19 @@ export default function Menu(props) {
   }
 
   return (
-    <Animatable.View style={[styles.menu, props.menuOpen && styles.menuOpen]} 
+    <Animatable.View style={[styles.container, props.menuOpen && styles.menuOpen]} 
       transition={['bottom', 'opacity']} duration={500}>
-      <View style={styles.menuButtonList}>
-        <TouchableOpacity style={styles.menuButton} uppercase={false} onPress={() => navTo('Map')}>
-          <View style={styles.menuButtonView}>
-            <Icon style={styles.menuButtonIcon} name='map' size={56} />
-            {fontLoaded && <Text style={styles.menuButtonText}> Map</Text>}
+      <TouchableWithoutFeedback style={styles.touchable} 
+        onPress={() => props.setMenuOpen(false)}>
+        <View style={styles.inner}>
+          <View style={styles.spacer} />
+          <View style={styles.menuButtonList}>
+            <FAB style={styles.menuButton} icon='map' onPress={() => navTo('Map')} />
+            <FAB style={styles.menuButton} icon='account' onPress={() => navTo('Login')} />
+            <FAB style={styles.menuButton} icon='help' onPress={() => navTo('Help')} />
           </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuButton} uppercase={false} onPress={() => navTo('Login')}>
-          <View style={styles.menuButtonView}>
-            <Icon style={styles.menuButtonIcon} name='user' size={56} />
-            {fontLoaded && <Text style={styles.menuButtonText}> My Profile</Text>}
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuButton} uppercase={false} onPress={() => navTo('Help')}>
-          <View style={styles.menuButtonView}>
-            <Icon style={styles.menuButtonIcon} name='question' size={56} />
-            {fontLoaded && <Text style={styles.menuButtonText}> Help</Text>}
-          </View>
-        </TouchableOpacity>
-      </View>
+        </View>
+      </TouchableWithoutFeedback>
     </Animatable.View>
   );
 }

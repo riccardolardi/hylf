@@ -3,15 +3,13 @@ import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { FAB } from 'react-native-paper';
 
 const styles = {
-	view: {
+	container: {
 		position: 'absolute',
-		bottom: 0,
-		width: '100%',
-		padding: 42,
-		alignItems: 'center'
+		bottom: 16 * 3,
+    width: '100%'
 	},
-  burger: {
-
+  button: {
+    alignSelf: 'center'
   }
 }
 
@@ -25,8 +23,8 @@ export default function MenuToggle(props) {
   }, [props.menuOpen]);
 
   return (
-  	<View style={styles.view} pointerEvents='box-none'>
-    	<FAB style={styles.burger} icon={props.menuOpen ? 'close' : 'menu'} 
+  	<View style={styles.container} pointerEvents='box-none'>
+    	<FAB style={styles.button} icon={props.menuOpen ? 'close' : 'menu'} 
     		onPress={() => props.setMenuOpen(!props.menuOpen)} />
     </View>
   );

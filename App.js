@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import * as Font from 'expo-font';
 import * as firebase from 'firebase';
+import * as Network from 'expo-network';
 import { navRef } from './components/RootNav.js';
 import Menu from './components/Menu.js';
 import MenuToggle from './components/MenuToggle.js';
@@ -13,6 +14,7 @@ import ProfileScreen from './components/ProfileScreen.js';
 import LoginScreen from './components/LoginScreen.js';
 import HelpScreen from './components/HelpScreen.js';
 import LoadOL from './components/LoadOL.js';
+import SysMessages from './components/SysMessages.js';
 
 if (!firebase.apps.length) firebase.initializeApp({
   apiKey: 'AIzaSyDGcbINBMQ8tF-rL1bVVhzyONH_u7W9M24',
@@ -54,6 +56,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [showLoadOL, setShowLoadOL] = React.useState(false);
   const [fontLoaded, setFontLoaded] = React.useState(false);
+  const [noNetwork, setNoNetwork] = React.useState(false);
   const [currentScreenIndex, setCurrentScreenIndex] = React.useState(0);
 
   firebase.auth().onAuthStateChanged(user => {
@@ -64,6 +67,11 @@ export default function App() {
     Font.loadAsync({
       'Itim': require('./assets/fonts/Itim-Regular.ttf')
     }).then(() => setFontLoaded(true));
+    setInterval(() => {
+      Network.getNetworkStateAsync().then(result => {
+        setNoNetwork(!result.isInternetReachable);
+      }).catch(error => console.error(error));
+    }, 5000);
   }, []);
 
   return (fontLoaded && 
@@ -86,7 +94,7 @@ export default function App() {
               setMenuOpen={setMenuOpen} currentScreenIndex={currentScreenIndex} screenIndex={1} />}
           </Stack.Screen>
           <Stack.Screen name='Help' options={screenOptions}>
-            {props => <HelpScreen {...props} authState={authState}  localUserData={localUserData} 
+            {props => <HelpScreen {...props} authState={authState} localUserData={localUserData} 
               firebase={firebase} setShowLoadOL={setShowLoadOL} setMenuOpen={setMenuOpen} 
               currentScreenIndex={currentScreenIndex} screenIndex={2} />}
           </Stack.Screen>
@@ -96,6 +104,7 @@ export default function App() {
         currentScreenIndex={currentScreenIndex} setCurrentScreenIndex={setCurrentScreenIndex} />
       <MenuToggle menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <LoadOL show={showLoadOL} />
+      <SysMessages noNetwork={noNetwork} />
     </PaperProvider>
   );
 }

@@ -72,12 +72,15 @@ export default function ProfileScreen(props) {
     const storageRef = props.firebase.storage().ref();
     let userImageRef = storageRef.child(`profileImages/${user.uid}`);
     const result = await userImageRef.listAll().then(result => result);
-    if (!result.items.length) return;
-    userImageRef = storageRef.child(`profileImages/${user.uid}/${user.uid}.jpg`);
-    await userImageRef.getDownloadURL().then(url => {
-      setUserImage(url);
-    }).catch(error => actionFail(error.message));
-    actionSuccess();
+    if (result.items.length) {
+      userImageRef = storageRef.child(`profileImages/${user.uid}/${user.uid}.jpg`);
+      await userImageRef.getDownloadURL().then(url => {
+        setUserImage(url);
+      }).catch(error => actionFail(error.message));
+      actionSuccess();
+    } else {
+      actionSuccess();
+    }
   }
 
   const getPermissionAsync = async () => {
@@ -139,6 +142,7 @@ export default function ProfileScreen(props) {
     setProfileError(null);
     props.firebase.auth().signOut().then(() => {
       setTimeout(() => {
+        resetUserData();
         actionSuccess();
         props.navigation.navigate('Login');
       }, 1000);
@@ -149,14 +153,12 @@ export default function ProfileScreen(props) {
     setProfileError(null);
     setIsLoading(false);
     props.setShowLoadOL('success');
-    scrollView.current.scrollToPosition(0, 0);
   }
 
   const actionFail = (error) => {
     setProfileError(error);
     setIsLoading(false);
     props.setShowLoadOL('fail');
-    scrollView.current.scrollToPosition(0, 0);
   }
 
   const uriToBlob = (uri) => {
@@ -170,10 +172,17 @@ export default function ProfileScreen(props) {
     });
   }
 
+  const resetUserData = () => {
+    setUserName(null);
+    setUserAddress(null);
+    setUserZIP(null);
+    setUserCity(null);
+    setUserPhone(null);
+    setUserImage(null);
+  }
+
   React.useEffect(() => {
-    loadData();
     props.navigation.addListener('focus', () => {
-      isOpen && scrollView.current.scrollToPosition(0, 0);
       loadData();
       setIsOpen(true);
     });
@@ -193,6 +202,18 @@ export default function ProfileScreen(props) {
     }
   }, [isLoading]);
 
+  React.useEffect(() => {
+    if (!props.authState) return;
+    props.setLocalUserData({
+      userName: userName || props.localUserData?.userName,
+      userAddress: userAddress || props.localUserData?.userAddress,
+      userZIP: userZIP || props.localUserData?.userZIP,
+      userCity: userCity || props.localUserData?.userCity,
+      userPhone: userPhone || props.localUserData?.userPhone,
+      userImage: userImage || props.localUserData?.userImage
+    });
+  }, [userName, userAddress, userZIP, userCity, userPhone, userImage]);
+
   return (isOpen && 
     <Animatable.View style={{flex: 1}} 
       animation='fadeInDown' duration={125} useNativeDriver>
@@ -200,7 +221,7 @@ export default function ProfileScreen(props) {
     		<KeyboardAwareScrollView ref={scrollView} keyboardOpeningTime={50} 
           contentContainerStyle={styles.container}>
           <Title style={[styles.title]}>
-            Hello, {userName || 'unknown hylfer!'}!
+            Hello, {props.localUserData?.userName || userName || 'unknown hylfer!'}!
           </Title>
           <Paragraph style={[styles.p, styles.field]}>
             This is your hylf profile.{'\n'}You can set your personal details which 
@@ -208,27 +229,30 @@ export default function ProfileScreen(props) {
           </Paragraph>
           <View style={{alignItems: 'center', marginBottom: 16}}>
             <TouchableOpacity onPress={() => changeUserImage()}>
-              <Image style={styles.image} source={userImage ? {uri: userImage} : require('../assets/user.png')} />
+              <Image style={styles.image} 
+                source={props.localUserData?.userImage || userImage ? 
+                  {uri: props.localUserData?.userImage || userImage, cache: 'default'} : 
+                    require('../assets/user.png')} />
             </TouchableOpacity>
           </View>
           {profileError && <Text style={[styles.profileError, styles.field]}>{profileError}</Text>}
-          <TextInput mode='outlined' style={styles.field} value={userName} 
+          <TextInput mode='outlined' style={styles.field} value={props.localUserData?.userName || userName} 
             label='Name' keyboardType='default' autoCompleteType='name' textContentType='name' 
             onChangeText={name => setUserName(name)} enablesReturnKeyAutomatically 
             disabled={isLoading} />
-          <TextInput mode='outlined' style={styles.field} value={userAddress} 
+          <TextInput mode='outlined' style={styles.field} value={props.localUserData?.userAddress || userAddress} 
             label='Address' keyboardType='default' autoCompleteType='street-address' textContentType='fullStreetAddress' 
             onChangeText={address => setUserAddress(address)} enablesReturnKeyAutomatically 
             disabled={isLoading} />
-          <TextInput mode='outlined' style={styles.field} value={userZIP} 
+          <TextInput mode='outlined' style={styles.field} value={props.localUserData?.userZIP || userZIP} 
             label='ZIP' keyboardType='numeric' autoCompleteType='postal-code' textContentType='postalCode' 
             onChangeText={zip => setUserZIP(zip)} enablesReturnKeyAutomatically 
             disabled={isLoading} />
-          <TextInput mode='outlined' style={styles.field} value={userCity} 
+          <TextInput mode='outlined' style={styles.field} value={props.localUserData?.userCity || userCity} 
             label='City' keyboardType='default' textContentType='addressCity' 
             onChangeText={city => setUserCity(city)} enablesReturnKeyAutomatically 
             disabled={isLoading} />
-          <TextInput mode='outlined' style={styles.field} value={userPhone} 
+          <TextInput mode='outlined' style={styles.field} value={props.localUserData?.userPhone || userPhone} 
             label='Phone' keyboardType='numeric' textContentType='telephoneNumber' autoCompleteType='tel' 
             onChangeText={phone => setUserPhone(phone)} enablesReturnKeyAutomatically 
             disabled={isLoading} />

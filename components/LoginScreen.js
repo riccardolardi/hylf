@@ -127,6 +127,7 @@ export default function LoginScreen(props) {
       setIsOpen(true);
     });
     props.navigation.addListener('blur', () => {
+      setIsLoading(false);
       setIsOpen(false);
     });
     return () => {

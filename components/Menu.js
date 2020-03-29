@@ -1,7 +1,6 @@
 import React from 'react';
-import { Text, View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import {View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import * as RootNav from './RootNav.js';
-import * as Font from 'expo-font';
 import * as Animatable from 'react-native-animatable';
 import { List, Divider, FAB } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -23,34 +22,55 @@ const styles = {
     flex: 1
   },
   menuButtonList: {
-    flex: 1,
+    flex: 3,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row'
   },
+  menuButtonWrap: {
+    backgroundColor: 'white',
+    width: 56,
+    height: 56,
+    borderRadius: 56,
+    marginHorizontal: 8,
+    shadowColor: 'black',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 3.84
+  },
   menuButton: {
-    margin: 16
+    backgroundColor: 'transparent'
+  },
+  active: {
+    backgroundColor: 'black'
   },
   spacer: {
-    flex: 1
+    flex: 4
   }
 }
 
 export default function Menu(props) {
 
-  const [fontLoaded, setFontLoaded] = React.useState(false);
+  const mapButtonRef = React.useRef(null);
+  const loginButtonRef = React.useRef(null);
+  const helpButtonRef = React.useRef(null);
+
+  const navTo = async (location, ref, index) => {
+    props.setCurrentScreenIndex(index);
+    await ref.current.pulse(125);
+    props.setMenuOpen(false);
+    setTimeout(() => {
+      if (props.authState && location === 'Login') location = 'Profile';
+      RootNav.navigate(location);
+    }, 125);
+  }
 
   React.useEffect(() => {
-    Font.loadAsync({
-      'JosefinSans': require('../assets/fonts/JosefinSans-Medium.ttf')
-    }).then(() => setFontLoaded(true));
-  }, []);
 
-  const navTo = (location) => {
-    props.setMenuOpen(false);
-    if (props.authState && location === 'Login') location = 'Profile';
-    RootNav.navigate(location);
-  }
+  }, []);
 
   return (
     <Animatable.View style={[styles.container, props.menuOpen && styles.menuOpen]} 
@@ -60,9 +80,24 @@ export default function Menu(props) {
         <View style={styles.inner}>
           <View style={styles.spacer} />
           <View style={styles.menuButtonList}>
-            <FAB style={styles.menuButton} icon='map' onPress={() => navTo('Map')} />
-            <FAB style={styles.menuButton} icon='account' onPress={() => navTo('Login')} />
-            <FAB style={styles.menuButton} icon='help' onPress={() => navTo('Help')} />
+            <Animatable.View transition='backgroundColor' ref={mapButtonRef} 
+              style={[styles.menuButtonWrap, props.currentScreenIndex === 0 && styles.active]}>
+              <FAB style={styles.menuButton} icon='map' 
+                color={props.currentScreenIndex === 0 ? 'white' : 'black'} 
+                  onPress={() => navTo('Map', mapButtonRef, 0)} />
+            </Animatable.View>
+            <Animatable.View transition='backgroundColor' ref={loginButtonRef} 
+              style={[styles.menuButtonWrap, props.currentScreenIndex === 1 && styles.active]}>
+              <FAB style={styles.menuButton} icon='account' 
+                color={props.currentScreenIndex === 1 ? 'white' : 'black'} 
+                  onPress={() => navTo('Login', loginButtonRef, 1)} />
+            </Animatable.View>
+            <Animatable.View transition='backgroundColor' ref={helpButtonRef} 
+              style={[styles.menuButtonWrap, props.currentScreenIndex === 2 && styles.active]}>
+              <FAB style={styles.menuButton} icon='help' 
+                color={props.currentScreenIndex === 2 ? 'white' : 'black'} 
+                  onPress={() => navTo('Help', helpButtonRef, 2)} />
+            </Animatable.View>
           </View>
         </View>
       </TouchableWithoutFeedback>

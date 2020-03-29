@@ -1,25 +1,32 @@
 import React from 'react';
 import { StyleSheet, View, Keyboard } from 'react-native';
 import * as Location from 'expo-location';
+import * as Animatable from 'react-native-animatable';
 import MapView from 'react-native-maps';
 import SearchMap from './SearchMap.js';
+
+const styles = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFill
+  },
+  map: {
+    ...StyleSheet.absoluteFill
+  }
+});
 
 export default function MapScreen(props) {
 
   const [currentPosition, setCurrentPosition] = React.useState(null);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const getCurrentPosition = async () => {
     const permissionResult = await Location.requestPermissionsAsync();
-
     if (!permissionResult.granted) {
       alert('Permission to location is required!');
       return;
     }
-
     const locationResult = await Location.getCurrentPositionAsync();
-
     if (!locationResult) return;
-
     setCurrentPosition({
       ...locationResult.coords,
       latitudeDelta: 0.05,
@@ -27,25 +34,23 @@ export default function MapScreen(props) {
     });
   }
 
-  const dismiss = () => {
-    Keyboard.dismiss;
-  }
-
   React.useEffect(() => {
-    getCurrentPosition()
+    getCurrentPosition();
+    props.navigation.addListener('focus', () => {
+      setIsOpen(true);
+    });
+    props.navigation.addListener('blur', () => {
+      setIsOpen(false);
+    });
+    return () => {
+      props.navigation.removeListener('focus');
+      props.navigation.removeListener('blur');
+    };
   }, []);
-
-  const styles = StyleSheet.create({
-    container: {
-      ...StyleSheet.absoluteFill
-    },
-    map: {
-      ...StyleSheet.absoluteFill
-    }
-  });
 	
-  return (
-  	<View style={styles.container}>
+  return (isOpen && 
+    <Animatable.View style={[styles.container]} 
+      animation='fadeInDown' duration={125} useNativeDriver>
 	    <MapView 
 	      style={styles.map} 
 	      onPress={Keyboard.dismiss} 
@@ -54,6 +59,6 @@ export default function MapScreen(props) {
 	      initialRegion={currentPosition ? currentPosition : null} 
 	    />
   		<SearchMap />
-	  </View>
+	  </Animatable.View>
 	);
 }

@@ -18,7 +18,7 @@ export default function SearchMap() {
   return (
     <View style={styles.view}>
 			<Searchbar 
-        placeholder='Search' 
+        placeholder={'Groceries, dog sitting, chat, ...'} 
         onChangeText={query => setSearchQuery(query)} 
         value={searchQuery} blurOnSubmit={true} 
         enablesReturnKeyAutomatically={true} 

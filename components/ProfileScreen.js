@@ -1,12 +1,11 @@
 import React from 'react';
-import { StyleSheet, Keyboard, TouchableWithoutFeedback, TouchableOpacity, 
-  Text, View, Image } from 'react-native';
-import * as Font from 'expo-font';
+import { StyleSheet, Keyboard, TouchableWithoutFeedback, 
+  TouchableOpacity, View, Image } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Button, TextInput } from 'react-native-paper';
+import * as Animatable from 'react-native-animatable';
+import { Button, TextInput, Title, Text, 
+  Paragraph, Subheading } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
-import { useNavigation } from '@react-navigation/native';
-import logoSrc from './../assets/logo.png';
 
 const styles = StyleSheet.create({
   container: {
@@ -14,16 +13,27 @@ const styles = StyleSheet.create({
     padding: 32,
     backgroundColor: '#fff',
     paddingTop: 64,
-    paddingBottom: 64 * 2
+    paddingBottom: 64 * 2,
+    minHeight: '100%'
   },
   image: {
     width: 120,
     height: 120,
     borderRadius: 120,
-    backgroundColor: '#dadada'
+    backgroundColor: '#dadada',
+    marginTop: 8
   },
   field: {
-  	marginBottom: 16
+  	marginBottom: 8
+  },
+  title: {
+    fontFamily: 'Itim',
+    fontSize: 32,
+    lineHeight: 36,
+    textAlign: 'center'
+  },
+  p: {
+    textAlign: 'center'
   },
   registerError: {
   	color: 'red',
@@ -31,12 +41,6 @@ const styles = StyleSheet.create({
   },
   profileError: {
     color: 'red',
-    textAlign: 'center'
-  },
-  title: {
-    fontFamily: 'JosefinSans',
-    fontSize: 32,
-    lineHeight: 36,
     textAlign: 'center'
   }
 })
@@ -51,11 +55,9 @@ export default function ProfileScreen(props) {
   const [userPhone, setUserPhone] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [profileError, setProfileError] = React.useState(null);
-  const [fontLoaded, setFontLoaded] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const scrollView = React.useRef(null);
-
-  const navigation = useNavigation();
 
   const loadData = async () => {
     const user = props.firebase.auth().currentUser;
@@ -138,7 +140,7 @@ export default function ProfileScreen(props) {
     props.firebase.auth().signOut().then(() => {
       setTimeout(() => {
         actionSuccess();
-        navigation.navigate('Login');
+        props.navigation.navigate('Login');
       }, 1000);
     }).catch(error => actionFail(error.message));
   }
@@ -169,16 +171,19 @@ export default function ProfileScreen(props) {
   }
 
   React.useEffect(() => {
-    scrollView.current.scrollToPosition(0, 0);
     loadData();
-    Font.loadAsync({
-      'JosefinSans': require('../assets/fonts/JosefinSans-Medium.ttf')
-    }).then(() => setFontLoaded(true));
-    const unsubscribe = navigation.addListener('focus', () => {
-      scrollView.current.scrollToPosition(0, 0);
+    props.navigation.addListener('focus', () => {
+      isOpen && scrollView.current.scrollToPosition(0, 0);
       loadData();
+      setIsOpen(true);
     });
-    return unsubscribe;
+    props.navigation.addListener('blur', () => {
+      setIsOpen(false);
+    });
+    return () => {
+      props.navigation.removeListener('focus');
+      props.navigation.removeListener('blur');
+    };
   }, []);
 
   React.useEffect(() => {
@@ -188,18 +193,19 @@ export default function ProfileScreen(props) {
     }
   }, [isLoading]);
 
-  return (
-    <View style={{flex: 1}}>
-    	<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+  return (isOpen && 
+    <Animatable.View style={{flex: 1}} 
+      animation='fadeInDown' duration={125} useNativeDriver>
+    	<TouchableWithoutFeedback style={{flex: 1}} onPress={Keyboard.dismiss} accessible={false}>
     		<KeyboardAwareScrollView ref={scrollView} keyboardOpeningTime={50} 
           contentContainerStyle={styles.container}>
-          {fontLoaded && <Text style={[styles.title, styles.field]}>
+          <Title style={[styles.title]}>
             Hello, {userName || 'unknown hylfer!'}!
-          </Text>}
-          <Text style={styles.field}>
-            This is your profile. You can set your personal details which 
+          </Title>
+          <Paragraph style={[styles.p, styles.field]}>
+            This is your hylf profile.{'\n'}You can set your personal details which 
             will gain you trustworthyness on the platform.
-          </Text>
+          </Paragraph>
           <View style={{alignItems: 'center', marginBottom: 16}}>
             <TouchableOpacity onPress={() => changeUserImage()}>
               <Image style={styles.image} source={userImage ? {uri: userImage} : require('../assets/user.png')} />
@@ -232,6 +238,6 @@ export default function ProfileScreen(props) {
             disabled={isLoading} onPress={() => logout()}>Logout</Button>
         </KeyboardAwareScrollView>
       </TouchableWithoutFeedback>
-    </View>
+    </Animatable.View>
   );
 }

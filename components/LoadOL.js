@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as Animatable from 'react-native-animatable';
 import LottieView from 'lottie-react-native';
-import { StyleSheet, Text, View, Image } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 const checkSrc = require('../assets/lottie/check.json');
 const failSrc = require('../assets/lottie/fail.json');

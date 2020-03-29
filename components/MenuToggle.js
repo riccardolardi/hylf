@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import * as Animatable from 'react-native-animatable';
 import { FAB } from 'react-native-paper';
 
 const styles = {
@@ -9,23 +10,44 @@ const styles = {
     width: '100%'
 	},
   button: {
-    alignSelf: 'center'
+    backgroundColor: 'transparent'
+  },
+  buttonWrap: {
+    alignSelf: 'center',
+    backgroundColor: 'white',
+    width: 56,
+    height: 56,
+    borderRadius: 56,
+    marginHorizontal: 8,
+    shadowColor: 'black',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 3.84
+  },
+  active: {
+    backgroundColor: 'black'
   }
 }
 
 export default function MenuToggle(props) {
 
-	const [menuTransitioning, setMenuTransitioning] = useState(false);
+  const buttonRef = React.createRef(null);
 
-  useEffect(() => {
-    setMenuTransitioning(true);
-    setTimeout(() => setMenuTransitioning(false), 125);
-  }, [props.menuOpen]);
+  React.useEffect(() => {
+
+  }, []);
 
   return (
   	<View style={styles.container} pointerEvents='box-none'>
-    	<FAB style={styles.button} icon={props.menuOpen ? 'close' : 'menu'} 
-    		onPress={() => props.setMenuOpen(!props.menuOpen)} />
+      <Animatable.View transition='backgroundColor' ref={buttonRef} 
+        style={[styles.buttonWrap, props.menuOpen && styles.active]}>
+      	<FAB style={styles.button} icon={props.menuOpen ? 'close' : 'menu'} 
+      		color={props.menuOpen ? 'white' : 'black'} 
+            onPress={() => props.setMenuOpen(!props.menuOpen)} />
+      </Animatable.View>
     </View>
   );
 }

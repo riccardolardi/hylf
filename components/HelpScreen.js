@@ -12,15 +12,22 @@ const helpSrc = require('../assets/lottie/help.json');
 
 const styles = {
 	container: {
+    display: 'none',
+    opacity: 0
+	},
+  open: {
+    display: 'flex'
+  },
+  scrollview: {
     justifyContent: 'center',
     padding: 32,
     backgroundColor: '#fff',
     paddingTop: 64,
     paddingBottom: 64 * 2,
     minHeight: '100%'
-	},
+  },
   field: {
-  	marginBottom: 8
+  	marginBottom: 16
   },
   title: {
     fontFamily: 'Itim',
@@ -32,6 +39,7 @@ const styles = {
     textAlign: 'center'
   },
   lottie: {
+    display: 'none',
     width: '35%',
     alignSelf: 'center',
     marginBottom: 42
@@ -45,9 +53,10 @@ const styles = {
 
 export default function HelpScreen(props) {
 
-	const [isOpen, setIsOpen] = React.useState(false);
+	const [isOpen, setIsOpen] = React.useState(null);
 
-	const scrollView = React.useRef(null);
+	const scrollViewRef = React.useRef(null);
+  const lottieRef = React.useRef(null);
 
 	const sendMail = () => {
 		MailComposer.composeAsync({saveOptions: {
@@ -60,29 +69,28 @@ export default function HelpScreen(props) {
 	}
 
   React.useEffect(() => {
-  	props.navigation.addListener('focus', () => {
-      setIsOpen(true);
-    });
-  	props.navigation.addListener('blur', () => {
-      setIsOpen(false);
-    });
-    return () => {
-    	props.navigation.removeListener('focus');
-    	props.navigation.removeListener('blur');
-    };
-  }, []);
+    if (isOpen) scrollViewRef.current.scrollToPosition(0, 0, false);
+    if (isOpen) lottieRef.current.play();
+    if (!isOpen) lottieRef.current.reset();
+  }, [isOpen]);
 
-  return (isOpen && 
-    <Animatable.View style={{flex: 1}} 
-      animation='fadeInDown' duration={125} useNativeDriver>
+  React.useEffect(() => {
+    const open = props.currentScreenIndex === props.screenIndex;
+    setTimeout(() => setIsOpen(open), 375);
+  }, [props.currentScreenIndex]);
+
+  return (
+    <Animatable.View style={[styles.container, isOpen && styles.open]} 
+      animation={isOpen ? 'fadeInDown' : null} duration={125} useNativeDriver>
   		<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} style={{flex: 1}}>
-    		<KeyboardAwareScrollView keyboardOpeningTime={50} ref={scrollView} 
-    			contentContainerStyle={styles.container}>
-    			<LottieView style={styles.lottie} source={helpSrc} autoPlay loop={false} />
-          <Title style={styles.title}>hylf help & faq</Title>
+    		<KeyboardAwareScrollView keyboardOpeningTime={50} ref={scrollViewRef} 
+    			contentContainerStyle={styles.scrollview}>
+    			<LottieView ref={lottieRef} style={[styles.lottie, isOpen && styles.open]} source={helpSrc} 
+            autoPlay={false} loop={false} />
+          <Title style={[styles.title, styles.field]}>hylf help & faq</Title>
           <Paragraph style={[styles.p, styles.field]}>
             We'll try covering the most frequently asked questions here. 
-            If you have any further questions or remarks, feel free to drop a line at:
+            If you have any further questions or remarks, feel free to drop a line:
           </Paragraph>
     	    <Button icon='email' mode='contained' style={styles.field} uppercase={false} 
     	    	onPress={() => sendMail()}>info@hylf.ch</Button>

@@ -1,12 +1,9 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import * as Font from 'expo-font';
 import * as firebase from 'firebase';
 import * as Network from 'expo-network';
-import { navRef } from './components/RootNav.js';
 import Menu from './components/Menu.js';
 import MenuToggle from './components/MenuToggle.js';
 import MapScreen from './components/MapScreen.js';
@@ -27,8 +24,6 @@ if (!firebase.apps.length) firebase.initializeApp({
   measurementId: 'G-C0YXBMEK07'
 });
 
-const Stack = createStackNavigator();
-
 const theme = {
   ...DefaultTheme,
   colors: {
@@ -44,9 +39,13 @@ const theme = {
   }
 }
 
-const screenOptions = {
-  animationEnabled: false,
-  gestureEnabled: false
+const styles = {
+  mainView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row'
+  }
 }
 
 export default function App() {
@@ -76,33 +75,53 @@ export default function App() {
 
   return (fontLoaded && 
     <PaperProvider theme={theme}>
-      <NavigationContainer ref={navRef}>
-        <Stack.Navigator initialRouteName='Map' headerMode='none'>
-          <Stack.Screen name='Map' options={screenOptions}>
-            {props => <MapScreen {...props} authState={authState} setMenuOpen={setMenuOpen} 
-              localUserData={localUserData} firebase={firebase} setShowLoadOL={setShowLoadOL} 
-              currentScreenIndex={currentScreenIndex} screenIndex={0} />}
-          </Stack.Screen>
-          <Stack.Screen name='Login' options={screenOptions}>
-            {props => <LoginScreen {...props} authState={authState} setLocalUserData={setLocalUserData} 
-              localUserData={localUserData} firebase={firebase} setShowLoadOL={setShowLoadOL} 
-              setMenuOpen={setMenuOpen} currentScreenIndex={currentScreenIndex} screenIndex={1} />}
-          </Stack.Screen>
-          <Stack.Screen name='Profile' options={screenOptions}>
-            {props => <ProfileScreen {...props} authState={authState} setLocalUserData={setLocalUserData} 
-              localUserData={localUserData} firebase={firebase} setShowLoadOL={setShowLoadOL} 
-              setMenuOpen={setMenuOpen} currentScreenIndex={currentScreenIndex} screenIndex={1} />}
-          </Stack.Screen>
-          <Stack.Screen name='Help' options={screenOptions}>
-            {props => <HelpScreen {...props} authState={authState} localUserData={localUserData} 
-              firebase={firebase} setShowLoadOL={setShowLoadOL} setMenuOpen={setMenuOpen} 
-              currentScreenIndex={currentScreenIndex} screenIndex={2} />}
-          </Stack.Screen>
-        </Stack.Navigator>
-      </NavigationContainer>
-      <Menu authState={authState} menuOpen={menuOpen} setMenuOpen={setMenuOpen} 
-        currentScreenIndex={currentScreenIndex} setCurrentScreenIndex={setCurrentScreenIndex} />
-      <MenuToggle menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <View style={styles.mainView}>
+        <MapScreen 
+          authState={authState} 
+          setMenuOpen={setMenuOpen} 
+          localUserData={localUserData}
+          firebase={firebase} 
+          setShowLoadOL={setShowLoadOL} 
+          currentScreenIndex={currentScreenIndex} 
+          setCurrentScreenIndex={setCurrentScreenIndex} 
+          screenIndex={0} />
+        <LoginScreen 
+          authState={authState} 
+          setMenuOpen={setMenuOpen} 
+          localUserData={localUserData} 
+          setLocalUserData={setLocalUserData} 
+          firebase={firebase} 
+          setShowLoadOL={setShowLoadOL} 
+          currentScreenIndex={currentScreenIndex} 
+          setCurrentScreenIndex={setCurrentScreenIndex} 
+          screenIndex={1} />
+        <ProfileScreen 
+          authState={authState} 
+          setMenuOpen={setMenuOpen} 
+          localUserData={localUserData} 
+          setLocalUserData={setLocalUserData} 
+          firebase={firebase} 
+          setShowLoadOL={setShowLoadOL} 
+          currentScreenIndex={currentScreenIndex} 
+          setCurrentScreenIndex={setCurrentScreenIndex} 
+          screenIndex={2} />
+        <HelpScreen 
+          authState={authState} 
+          setMenuOpen={setMenuOpen} 
+          localUserData={localUserData} 
+          currentScreenIndex={currentScreenIndex} 
+          setCurrentScreenIndex={setCurrentScreenIndex} 
+          screenIndex={3} />
+      </View>
+      <Menu 
+        authState={authState} 
+        menuOpen={menuOpen} 
+        setMenuOpen={setMenuOpen} 
+        currentScreenIndex={currentScreenIndex} 
+        setCurrentScreenIndex={setCurrentScreenIndex} />
+      <MenuToggle 
+        menuOpen={menuOpen} 
+        setMenuOpen={setMenuOpen} />
       <LoadOL show={showLoadOL} />
       <SysMessages noNetwork={noNetwork} />
     </PaperProvider>

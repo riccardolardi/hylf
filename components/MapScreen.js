@@ -7,7 +7,12 @@ import SearchMap from './SearchMap.js';
 
 const styles = StyleSheet.create({
   container: {
+    display: 'none',
+    opacity: 0,
     ...StyleSheet.absoluteFill
+  },
+  open: {
+    display: 'flex'
   },
   map: {
     ...StyleSheet.absoluteFill
@@ -17,7 +22,7 @@ const styles = StyleSheet.create({
 export default function MapScreen(props) {
 
   const [currentPosition, setCurrentPosition] = React.useState(null);
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(null);
 
   const getCurrentPosition = async () => {
     const permissionResult = await Location.requestPermissionsAsync();
@@ -36,21 +41,16 @@ export default function MapScreen(props) {
 
   React.useEffect(() => {
     getCurrentPosition();
-    props.navigation.addListener('focus', () => {
-      setIsOpen(true);
-    });
-    props.navigation.addListener('blur', () => {
-      setIsOpen(false);
-    });
-    return () => {
-      props.navigation.removeListener('focus');
-      props.navigation.removeListener('blur');
-    };
-  }, []);
+  }, [isOpen]);
+
+  React.useEffect(() => {
+    const open = props.currentScreenIndex === props.screenIndex;
+    setTimeout(() => setIsOpen(open), 375);
+  }, [props.currentScreenIndex]);
 	
-  return (isOpen && 
-    <Animatable.View style={[styles.container]} 
-      animation='fadeInDown' duration={125} useNativeDriver>
+  return (
+    <Animatable.View style={[styles.container, isOpen && styles.open]} 
+      animation={isOpen ? 'fadeInDown' : null} duration={125} useNativeDriver>
 	    <MapView 
 	      style={styles.map} 
 	      onPress={Keyboard.dismiss} 

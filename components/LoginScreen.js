@@ -6,19 +6,26 @@ import LottieView from 'lottie-react-native';
 import * as Animatable from 'react-native-animatable';
 import { Button, TextInput, Title, Text, 
   Paragraph, Subheading } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
 
 const scapeSrc = require('../assets/lottie/scape.json');
 
 const styles = StyleSheet.create({
   container: {
+    display: 'none',
+    opacity: 0,
+    ...StyleSheet.absoluteFill
+  },
+  open: {
+    display: 'flex'
+  },
+  scrollview: {
     justifyContent: 'center',
     padding: 32,
     backgroundColor: '#fff',
     ...StyleSheet.absoluteFill
   },
   touchable: {
-    ...StyleSheet.absoluteFill
+    flex: 1
   },
   inner: {
     
@@ -29,7 +36,7 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   field: {
-  	marginBottom: 8
+  	marginBottom: 16
   },
   loginError: {
   	color: 'red',
@@ -63,11 +70,9 @@ export default function LoginScreen(props) {
 	const [userPassword, setUserPassword] = React.useState(null);
 	const [loginError, setLoginError] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(null);
 
   const scrollView = React.useRef(null);
-
-  const navigation = useNavigation();
 
   const register = () => {
   	props.firebase.auth().createUserWithEmailAndPassword(userEmail, userPassword)
@@ -108,12 +113,20 @@ export default function LoginScreen(props) {
   }
 
   const handleLoginSuccess = (data) => {
-    navigation.navigate('Profile');
+    props.setCurrentScreenIndex(2);
+    setUserEmail(null);
+    setUserPassword(null);
   }
 
   const handleRegisterSuccess = (data) => {
-    navigation.navigate('Profile');
+    props.setCurrentScreenIndex(2);
+    setUserEmail(null);
+    setUserPassword(null);
   }
+
+  React.useEffect(() => {
+    if (!isOpen) setIsLoading(false);
+  }, [isOpen]);
 
   React.useEffect(() => {
     if (isLoading) {
@@ -123,29 +136,20 @@ export default function LoginScreen(props) {
   }, [isLoading]);
 
   React.useEffect(() => {
-    props.navigation.addListener('focus', () => {
-      setIsOpen(true);
-    });
-    props.navigation.addListener('blur', () => {
-      setIsLoading(false);
-      setIsOpen(false);
-    });
-    return () => {
-      props.navigation.removeListener('focus');
-      props.navigation.removeListener('blur');
-    };
-  }, []);
+    const open = props.currentScreenIndex === props.screenIndex;
+    setTimeout(() => setIsOpen(open), 375);
+  }, [props.currentScreenIndex]);
 
-  return (isOpen && 
-    <Animatable.View style={{flex: 1}} 
-      animation='fadeInDown' duration={125} useNativeDriver>
-      <TouchableWithoutFeedback style={{flex: 1}} onPress={Keyboard.dismiss} accessible={false}>
+  return (
+    <Animatable.View style={[styles.container, isOpen && styles.open]} 
+      animation={isOpen ? 'fadeInDown' : null} duration={125} useNativeDriver>
+      <TouchableWithoutFeedback style={styles.touchable} onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAwareScrollView ref={scrollView} keyboardOpeningTime={50} 
-          contentContainerStyle={styles.container}>
+          contentContainerStyle={styles.scrollview}>
       		<View style={styles.inner}>
             <View>
             <LottieView style={styles.lottie} source={scapeSrc} autoPlay loop />
-            <Title style={[styles.title]}>Login to hylf</Title>
+            <Title style={[styles.title, styles.field]}>Login to hylf</Title>
             <Paragraph style={[styles.intro, styles.field]}>Welcome! Please login or register to access or setup your profile and offer new services.</Paragraph>
     	    	{loginError && <Text style={[styles.loginError, styles.field]}>{loginError}</Text>}
     	    	<TextInput mode='outlined' style={styles.field} value={userEmail} label='Email' 

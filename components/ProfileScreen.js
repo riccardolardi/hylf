@@ -9,6 +9,14 @@ import * as ImagePicker from 'expo-image-picker';
 
 const styles = StyleSheet.create({
   container: {
+    display: 'none',
+    opacity: 0,
+    ...StyleSheet.absoluteFill
+  },
+  open: {
+    display: 'flex',
+  },
+  scrollview: {
     justifyContent: 'center',
     padding: 32,
     backgroundColor: '#fff',
@@ -21,10 +29,11 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 120,
     backgroundColor: '#dadada',
-    marginTop: 8
+    marginTop: 8,
+    marginBottom: 4
   },
   field: {
-  	marginBottom: 8
+  	marginBottom: 16
   },
   title: {
     fontFamily: 'Itim',
@@ -47,27 +56,30 @@ const styles = StyleSheet.create({
 
 export default function ProfileScreen(props) {
 
-  const [userImage, setUserImage] = React.useState(null);
-  const [userName, setUserName] = React.useState(null);
-  const [userAddress, setUserAddress] = React.useState(null);
-  const [userZIP, setUserZIP] = React.useState(null);
-  const [userCity, setUserCity] = React.useState(null);
-  const [userPhone, setUserPhone] = React.useState(null);
+  const [userImage, setUserImage] = React.useState(props.localUserData?.userImage);
+  const [userName, setUserName] = React.useState(props.localUserData?.userName);
+  const [userAddress, setUserAddress] = React.useState(props.localUserData?.userAddress);
+  const [userZIP, setUserZIP] = React.useState(props.localUserData?.userZIP);
+  const [userCity, setUserCity] = React.useState(props.localUserData?.userCity);
+  const [userPhone, setUserPhone] = React.useState(props.localUserData?.userPhone);
+  const [userEmail, setUserEmail] = React.useState(props.localUserData?.userEmail);
   const [isLoading, setIsLoading] = React.useState(false);
   const [profileError, setProfileError] = React.useState(null);
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(null);
 
-  const scrollView = React.useRef(null);
+  const scrollViewRef = React.useRef(null);
 
   const loadData = async () => {
     const user = props.firebase.auth().currentUser;
     if (!user) return;
+    setIsLoading(true);
     await props.firebase.database().ref('/users/' + user.uid).once('value').then(snapshot => {
       setUserName(snapshot.val()?.name);
       setUserAddress(snapshot.val()?.address);
       setUserZIP(snapshot.val()?.zip);
       setUserCity(snapshot.val()?.city);
       setUserPhone(snapshot.val()?.phone);
+      setUserEmail(user.email);
     });
     const storageRef = props.firebase.storage().ref();
     let userImageRef = storageRef.child(`profileImages/${user.uid}`);
@@ -102,39 +114,32 @@ export default function ProfileScreen(props) {
     if (!result.cancelled) setUserImage(result.uri);
   };
 
-  const save = async () => {
-    setIsLoading(true);
-    const user = props.firebase.auth().currentUser;
-    await user.updateProfile({
-      displayName: userName,
-      photoURL: userImage
-    }).catch(error => {
-      actionFail(error.message);
-      return;
+  const save = () => {
+    return new Promise(async (resolve, reject) => {
+      setIsLoading(true);
+      const user = props.firebase.auth().currentUser;
+      await user.updateProfile({
+        displayName: userName,
+        photoURL: userImage
+      }).catch(error => reject(error));
+      await props.firebase.database().ref('/users/' + user.uid).set({
+        name: userName,
+        address: userAddress,
+        zip: userZIP,
+        city: userCity,
+        phone: userPhone
+      }).catch(error => reject(error));
+      if (userImage) {
+        const storageRef = props.firebase.storage().ref();
+        const userImageRef = storageRef.child(`profileImages/${user.uid}/${user.uid}.jpg`);
+        await uriToBlob(userImage).then(blob => {
+          userImageRef.put(blob, {contentType: 'image/jpeg'}).then(() => {
+            blob.close();
+          });
+        }).catch(error => reject(error));
+      }
+      resolve();
     });
-    await props.firebase.database().ref('/users/' + user.uid).set({
-      name: userName,
-      address: userAddress,
-      zip: userZIP,
-      city: userCity,
-      phone: userPhone
-    }).catch(error => {
-      actionFail(error.message);
-      return;
-    });
-    if (userImage) {
-      const storageRef = props.firebase.storage().ref();
-      const userImageRef = storageRef.child(`profileImages/${user.uid}/${user.uid}.jpg`);
-      await uriToBlob(userImage).then(blob => {
-        userImageRef.put(blob, {contentType: 'image/jpeg'}).then(() => {
-          blob.close();
-        });
-      }).catch(error => {
-        actionFail(error.message);
-        return;
-      });
-    }
-    actionSuccess();
   }
 
   const logout = () => {
@@ -144,7 +149,7 @@ export default function ProfileScreen(props) {
       setTimeout(() => {
         resetUserData();
         actionSuccess();
-        props.navigation.navigate('Login');
+        props.setCurrentScreenIndex(1);
       }, 1000);
     }).catch(error => actionFail(error.message));
   }
@@ -152,12 +157,14 @@ export default function ProfileScreen(props) {
   const actionSuccess = () => {
     setProfileError(null);
     setIsLoading(false);
+    scrollViewRef.current.scrollToPosition(0, 0);
     props.setShowLoadOL('success');
   }
 
   const actionFail = (error) => {
     setProfileError(error);
     setIsLoading(false);
+    scrollViewRef.current.scrollToPosition(0, 0);
     props.setShowLoadOL('fail');
   }
 
@@ -179,21 +186,15 @@ export default function ProfileScreen(props) {
     setUserCity(null);
     setUserPhone(null);
     setUserImage(null);
+    setUserEmail(null);
+    props.setLocalUserData(null);
   }
 
   React.useEffect(() => {
-    props.navigation.addListener('focus', () => {
-      loadData();
-      setIsOpen(true);
-    });
-    props.navigation.addListener('blur', () => {
-      setIsOpen(false);
-    });
-    return () => {
-      props.navigation.removeListener('focus');
-      props.navigation.removeListener('blur');
-    };
-  }, []);
+    if (isOpen) scrollViewRef.current.scrollToPosition(0, 0, false);
+    if (isOpen && !props.localUserData) loadData();
+    if (!isOpen) setIsLoading(false);
+  }, [isOpen]);
 
   React.useEffect(() => {
     if (isLoading) {
@@ -203,6 +204,11 @@ export default function ProfileScreen(props) {
   }, [isLoading]);
 
   React.useEffect(() => {
+    const open = props.currentScreenIndex === props.screenIndex;
+    setTimeout(() => setIsOpen(open), 375);
+  }, [props.currentScreenIndex]);
+
+  React.useEffect(() => {
     if (!props.authState) return;
     props.setLocalUserData({
       userName: userName || props.localUserData?.userName,
@@ -210,18 +216,19 @@ export default function ProfileScreen(props) {
       userZIP: userZIP || props.localUserData?.userZIP,
       userCity: userCity || props.localUserData?.userCity,
       userPhone: userPhone || props.localUserData?.userPhone,
-      userImage: userImage || props.localUserData?.userImage
+      userImage: userImage || props.localUserData?.userImage,
+      userEmail: userEmail || props.localUserData?.userEmail
     });
   }, [userName, userAddress, userZIP, userCity, userPhone, userImage]);
 
-  return (isOpen && 
-    <Animatable.View style={{flex: 1}} 
-      animation='fadeInDown' duration={125} useNativeDriver>
+  return (
+    <Animatable.View style={[styles.container, isOpen && styles.open]} 
+      animation={isOpen ? 'fadeInDown' : null} duration={125} useNativeDriver>
     	<TouchableWithoutFeedback style={{flex: 1}} onPress={Keyboard.dismiss} accessible={false}>
-    		<KeyboardAwareScrollView ref={scrollView} keyboardOpeningTime={50} 
-          contentContainerStyle={styles.container}>
-          <Title style={[styles.title]}>
-            Hello, {props.localUserData?.userName || userName || 'unknown hylfer!'}!
+    		<KeyboardAwareScrollView ref={scrollViewRef} keyboardOpeningTime={50} 
+          contentContainerStyle={styles.scrollview}>
+          <Title style={[styles.title, styles.field]}>
+            Hello, {userName || 'unknown hylfer!'}!
           </Title>
           <Paragraph style={[styles.p, styles.field]}>
             This is your hylf profile.{'\n'}You can set your personal details which 
@@ -230,34 +237,38 @@ export default function ProfileScreen(props) {
           <View style={{alignItems: 'center', marginBottom: 16}}>
             <TouchableOpacity onPress={() => changeUserImage()}>
               <Image style={styles.image} 
-                source={props.localUserData?.userImage || userImage ? 
-                  {uri: props.localUserData?.userImage || userImage, cache: 'default'} : 
-                    require('../assets/user.png')} />
+                source={userImage ? {uri: userImage, cache: 'default'} : require('../assets/user.png')} />
             </TouchableOpacity>
           </View>
           {profileError && <Text style={[styles.profileError, styles.field]}>{profileError}</Text>}
-          <TextInput mode='outlined' style={styles.field} value={props.localUserData?.userName || userName} 
+          <TextInput mode='outlined' style={styles.field} value={userName} 
             label='Name' keyboardType='default' autoCompleteType='name' textContentType='name' 
             onChangeText={name => setUserName(name)} enablesReturnKeyAutomatically 
             disabled={isLoading} />
-          <TextInput mode='outlined' style={styles.field} value={props.localUserData?.userAddress || userAddress} 
+          <TextInput mode='outlined' style={styles.field} value={userAddress} 
             label='Address' keyboardType='default' autoCompleteType='street-address' textContentType='fullStreetAddress' 
             onChangeText={address => setUserAddress(address)} enablesReturnKeyAutomatically 
             disabled={isLoading} />
-          <TextInput mode='outlined' style={styles.field} value={props.localUserData?.userZIP || userZIP} 
+          <TextInput mode='outlined' style={styles.field} value={userZIP} 
             label='ZIP' keyboardType='numeric' autoCompleteType='postal-code' textContentType='postalCode' 
             onChangeText={zip => setUserZIP(zip)} enablesReturnKeyAutomatically 
             disabled={isLoading} />
-          <TextInput mode='outlined' style={styles.field} value={props.localUserData?.userCity || userCity} 
+          <TextInput mode='outlined' style={styles.field} value={userCity} 
             label='City' keyboardType='default' textContentType='addressCity' 
             onChangeText={city => setUserCity(city)} enablesReturnKeyAutomatically 
             disabled={isLoading} />
-          <TextInput mode='outlined' style={styles.field} value={props.localUserData?.userPhone || userPhone} 
+          <TextInput mode='outlined' style={styles.field} value={userPhone} 
             label='Phone' keyboardType='numeric' textContentType='telephoneNumber' autoCompleteType='tel' 
             onChangeText={phone => setUserPhone(phone)} enablesReturnKeyAutomatically 
             disabled={isLoading} />
+          <TextInput mode='outlined' style={styles.field} value={userEmail} 
+            label='Email' keyboardType='email-address' textContentType='emailAddress' autoCompleteType='email' 
+            onChangeText={phone => setUserEmail(email)} enablesReturnKeyAutomatically 
+            disabled={true} />
           <Button icon='check' style={styles.field} color='#2da84a' mode='contained' 
-            disabled={isLoading} onPress={() => save()}>Save</Button>
+            disabled={isLoading} onPress={
+              () => save().then(() => actionSuccess()).catch(error => actionFail(error.message))
+            }>Save</Button>
           <Button icon='logout' color='#ed5247' mode='contained' 
             disabled={isLoading} onPress={() => logout()}>Logout</Button>
         </KeyboardAwareScrollView>

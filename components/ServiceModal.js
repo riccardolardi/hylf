@@ -83,15 +83,6 @@ const styles = {
 export default function ServiceModal(props) {
 
   const scrollViewRef = React.useRef(null);
-  const txtFieldRefs = [
-    React.useRef(null),
-    React.useRef(null),
-    React.useRef(null),
-    React.useRef(null),
-    React.useRef(null),
-    React.useRef(null),
-    React.useRef(null)
-  ];
 
   const [serviceTitle, setServiceTitle] = React.useState(null);
   const [serviceDescription, setServiceDescription] = React.useState(null);
@@ -102,20 +93,18 @@ export default function ServiceModal(props) {
   const [servicePhone, setServicePhone] = React.useState(props.localUserData?.userPhone);
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const tabTo = (index) => {
-    txtFieldRefs[index].current.focus();
-  }
-
-  const cancelModal = () => {
+  const closeModal = (force) => {
+    Keyboard.dismiss();
+    if (force) {
+      props.setData(null);
+      return;
+    }
     Alert.alert(
       'Cancel?', 
       'Sure you want to cancel? All entered information will be lost.',
       [
         {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-        {text: 'OK', onPress: () => {
-          props.setData(null);
-          Keyboard.dismiss();
-        }},
+        {text: 'OK', onPress: () => props.setData(null)},
       ], {cancelable: true}
     );
   }
@@ -133,7 +122,21 @@ export default function ServiceModal(props) {
       Alert.alert('Missing contact info', 'You need to provide either an email address or a phone number.');
       return;
     }
-    Promise.resolve();
+    setIsLoading(true);
+    const data = {
+      coordinate: props.data.coordinate,
+      title: serviceTitle,
+      description: serviceDescription,
+      address: serviceAddress,
+      zip: serviceZIP,
+      city: serviceCity,
+      email: serviceEmail,
+      phone: servicePhone
+    }
+    props.addService(data).then(() => {
+      Promise.resolve();
+      closeModal(true);
+    }).catch(error => Promise.reject(error));
   }
 
   const actionSuccess = () => {
@@ -156,6 +159,8 @@ export default function ServiceModal(props) {
 
   React.useEffect(() => {
     if (props.data?.show) {
+      setServiceTitle(null);
+      setServiceDescription(null);
       setServiceAddress(props.localUserData?.userAddress || null);
       setServiceZIP(props.localUserData?.userZIP || null);
       setServiceCity(props.localUserData?.userCity || null);
@@ -176,47 +181,41 @@ export default function ServiceModal(props) {
               <Image style={styles.marker} source={markerImg} />
               <View style={styles.triangle} />
               <KeyboardAwareScrollView ref={scrollViewRef} keyboardOpeningTime={0} 
-                contentContainerStyle={styles.scrollview} extraScrollHeight={112} 
-                extraHeight={112}>
-                <View>
+                contentContainerStyle={styles.scrollview} extraHeight={136}>
+                <View style={{flex: 1}}>
                   <Title style={[styles.title, styles.field]}>Offer some hylf!</Title>
                   <Image source={serviceImg} style={[styles.serviceImg, styles.field]} />
                   <Paragraph style={[styles.intro, styles.field]}>To add a new service please fill in the following form. The more info you enter, the better your service will be found.</Paragraph>
                   <TextInput mode='outlined' style={styles.field} value={serviceTitle} 
-                    label='Service title' keyboardType='default' ref={txtFieldRefs[0]} 
+                    label='Service title' keyboardType='default' blurOnSubmit={true} 
                     onChangeText={title => setServiceTitle(title)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} placeholder='e.g. "Dog sitting"' onSubmitEditing={() => tabTo(1)} blurOnSubmit={false} />
+                    disabled={isLoading} placeholder='e.g. "Dog sitting"' />
                   <TextInput mode='outlined' style={styles.field} value={serviceDescription} 
-                    label='Service description' keyboardType='default' ref={txtFieldRefs[1]} 
+                    label='Service description' keyboardType='default' blurOnSubmit={true} multiline 
                     onChangeText={description => setServiceDescription(description)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} placeholder='e.g. "I can offer to sit your dog on Sundays and Tuesdays from 9am to 11am, ..."' 
-                    onSubmitEditing={() => tabTo(2)} blurOnSubmit={false} />
+                    disabled={isLoading} placeholder='e.g. "I can offer to sit your dog on Sundays and Tuesdays from 9am to 11am, ..."' />
                   <TextInput mode='outlined' style={styles.field} value={serviceAddress} 
-                    label='Location/Address' keyboardType='default' ref={txtFieldRefs[2]} 
+                    label='Location/Address' keyboardType='default' blurOnSubmit={true} 
                     onChangeText={address => setServiceAddress(address)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} placeholder='e.g. "Gotthelf-Quartier"' 
-                    onSubmitEditing={() => tabTo(3)} blurOnSubmit={false} />
+                    disabled={isLoading} placeholder='e.g. "Gotthelf-Quartier"' />
                   <TextInput mode='outlined' style={styles.field} value={serviceZIP} 
-                    label='ZIP' keyboardType='numeric' ref={txtFieldRefs[3]} 
+                    label='ZIP' keyboardType='numeric' blurOnSubmit={true}
                     onChangeText={zip => setServiceZIP(zip)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} placeholder='e.g. "4054"' 
-                    onSubmitEditing={() => tabTo(4)} blurOnSubmit={false} />
+                    disabled={isLoading} placeholder='e.g. "4054"' />
                   <TextInput mode='outlined' style={styles.field} value={serviceCity} 
-                    label='City' keyboardType='default' ref={txtFieldRefs[4]} 
+                    label='City' keyboardType='default' blurOnSubmit={true} 
                     onChangeText={city => setServiceCity(city)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} placeholder='e.g. "Basel"' 
-                    onSubmitEditing={() => tabTo(5)} blurOnSubmit={false} />
-                  <TextInput mode='outlined' style={styles.field} value={serviceEmail} 
+                    disabled={isLoading} placeholder='e.g. "Basel"' />
+                  <TextInput mode='outlined' style={styles.field} value={serviceEmail} blurOnSubmit={true}
                     label='Email' keyboardType='email-address' textContentType='emailAddress' autoCompleteType='email' 
-                    onChangeText={email => setServiceEmail(email)} enablesReturnKeyAutomatically 
-                    ref={txtFieldRefs[5]} onSubmitEditing={() => tabTo(6)} blurOnSubmit={false} />
-                  <TextInput mode='outlined' style={styles.field} value={servicePhone} 
+                    onChangeText={email => setServiceEmail(email)} enablesReturnKeyAutomatically />
+                  <TextInput mode='outlined' style={styles.field} value={servicePhone} blurOnSubmit={true} 
                     label='Phone' keyboardType='numeric' textContentType='telephoneNumber' 
                     onChangeText={phone => setServicePhone(phone)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} autoCompleteType='tel' ref={txtFieldRefs[6]} />
+                    disabled={isLoading} autoCompleteType='tel' />
                   <View style={styles.buttonsView}>
                     <Button icon='close' style={[styles.field, styles.button]} color='#ed5247' mode='contained' 
-                      disabled={isLoading} onPress={cancelModal}>Cancel</Button>
+                      disabled={isLoading} onPress={() => closeModal(false)}>Cancel</Button>
                     <Button icon='check' style={[styles.field, styles.button]} color='#2da84a' mode='contained' 
                       disabled={isLoading} onPress={
                         () => save().then(() => actionSuccess()).catch(error => actionFail(error.message))

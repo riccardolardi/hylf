@@ -50,13 +50,13 @@ export default function MapScreen(props) {
 
   const onLongPress = (event) => {
     Keyboard.dismiss();
-    if (!props.authState || !props.localUserData) {
+    if (!props.localUserData) {
       Alert.alert(
         'Who are you?', 
         'To add services you need to identify yourself. Please login or register first.',
         [
           {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-          {text: 'OK', onPress: () => props.setCurrentScreenIndex(1)},
+          {text: 'OK', onPress: () => props.setCurrentScreenIndex(props.authState ? 2 : 1)},
         ], {cancelable: true}
       );
       return;
@@ -72,16 +72,53 @@ export default function MapScreen(props) {
     setShowServiceModal({
       show: true,
       mode: 'add',
-      data: newLocation
+      coordinate: event.nativeEvent.coordinate
     });
   }
 
-  const addService = (data) => {
+  const addService = async (data) => {
     setMarkerArray(markerArray.concat({
       latlng: data.coordinate,
       title: data.title,
       description: data.description
     }));
+    const user = props.firebase.auth().currentUser;
+    const serviceId = user.uid + '-' + Date.now(); // sloppy
+    await props.firebase.database().ref('/services/' + serviceId).set({
+      coordinate: data.coordinate,
+      title: data.title,
+      description: data.description,
+      address: data.address,
+      zip: data.zip,
+      city: data.city,
+      email: data.email,
+      phone: data.phone,
+      userData: props.localUserData,
+      userId: user.uid,
+      serviceId: serviceId,
+      creationDate: Date.now()
+    }).catch(error => {
+      Promise.reject(error);
+      return;
+    });
+    setTimeout(() => 
+      mapViewRef.current.animateToRegion(data.coordinate, 125), 1000);
+    Promise.resolve();
+  }
+
+  const loadServices = async () => {
+    await props.firebase.database().ref('/services').once('value').then(snapshot => {
+      const newMarkerArray = [];
+      snapshot.val() && snapshot.forEach(item => {
+        item.val() && newMarkerArray.push({
+          latlng: item.val().coordinate,
+          title: item.val().title,
+          description: item.val().description,
+          data: item.val()
+        });
+      });
+      setMarkerArray(newMarkerArray);
+    });
   }
 
   const onRegionChangeComplete = (event) => {
@@ -100,7 +137,10 @@ export default function MapScreen(props) {
   }, [showServiceModal]);
 
   React.useEffect(() => {
-    getCurrentPosition();
+    if (isOpen) {
+      getCurrentPosition();
+      loadServices();
+    }
   }, [isOpen]);
 
   React.useEffect(() => {

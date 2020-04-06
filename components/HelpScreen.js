@@ -60,7 +60,7 @@ export default function HelpScreen(props) {
 
 	const sendMail = () => {
 		MailComposer.composeAsync({saveOptions: {
-			recipients: ['info@hylf.ch'],
+			recipients: ['hylf@hylf.ch'],
 			subject: 'hylf me!',
 			body: 'Yo hylf, I wanted to ask you...'
 		}}).then(result => {
@@ -93,7 +93,7 @@ export default function HelpScreen(props) {
             If you have any further questions or remarks, feel free to drop a line:
           </Paragraph>
     	    <Button icon='email' mode='contained' style={styles.field} uppercase={false} 
-    	    	onPress={() => sendMail()}>info@hylf.ch</Button>
+    	    	onPress={() => sendMail()}>hylf@hylf.ch</Button>
     	    <List.Accordion title='What are the types of services I can find on hylf? Is it legal?' 
     	    	titleNumberOfLines={10}>
     	    	<List.Item title="You'll find services like animal sitting, helping buying groceries, 

@@ -41,13 +41,15 @@ export default function MenuToggle(props) {
   }, []);
 
   return (
-  	<View style={styles.container} pointerEvents='box-none'>
+  	<Animatable.View style={styles.container} pointerEvents='box-none' 
+      animation={props.show ? 'fadeInUp' : 'fadeOutDown'} duration={125} 
+        useNativeDriver>
       <Animatable.View transition='backgroundColor' ref={buttonRef} 
         style={[styles.buttonWrap, props.menuOpen && styles.active]}>
       	<FAB style={styles.button} icon={props.menuOpen ? 'close' : 'menu'} 
       		color={props.menuOpen ? 'white' : 'black'} 
             onPress={() => props.setMenuOpen(!props.menuOpen)} />
       </Animatable.View>
-    </View>
+    </Animatable.View>
   );
 }

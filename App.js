@@ -56,6 +56,8 @@ export default function App() {
   const [showLoadOL, setShowLoadOL] = React.useState(false);
   const [fontLoaded, setFontLoaded] = React.useState(false);
   const [noNetwork, setNoNetwork] = React.useState(false);
+  const [showMapSearchBar, setShowMapSearchBar] = React.useState(true);
+  const [showMenuToggle, setShowMenuToggle] = React.useState(true);
   const [currentScreenIndex, setCurrentScreenIndex] = React.useState(0);
 
   firebase.auth().onAuthStateChanged(user => {
@@ -84,6 +86,9 @@ export default function App() {
           setShowLoadOL={setShowLoadOL} 
           currentScreenIndex={currentScreenIndex} 
           setCurrentScreenIndex={setCurrentScreenIndex} 
+          showMapSearchBar={showMapSearchBar} 
+          setShowMapSearchBar={setShowMapSearchBar} 
+          setShowMenuToggle={setShowMenuToggle} 
           screenIndex={0} />
         <LoginScreen 
           authState={authState} 
@@ -120,6 +125,7 @@ export default function App() {
         currentScreenIndex={currentScreenIndex} 
         setCurrentScreenIndex={setCurrentScreenIndex} />
       <MenuToggle 
+        show={showMenuToggle} 
         menuOpen={menuOpen} 
         setMenuOpen={setMenuOpen} />
       <LoadOL show={showLoadOL} />

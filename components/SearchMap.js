@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View, Image } from 'react-native';
+import * as Animatable from 'react-native-animatable';
 import { Searchbar } from 'react-native-paper';
 
-export default function SearchMap() {
+export default function SearchMap(props) {
 
 	const [searchQuery, setSearchQuery] = React.useState('');
 
 	const styles = {
-		view: {
+		container: {
 			position: 'absolute',
 			top: 32,
 			width: '100%',
@@ -16,13 +17,14 @@ export default function SearchMap() {
 	}
 
   return (
-    <View style={styles.view}>
+    <Animatable.View style={styles.container} 
+      animation={props.show ? 'fadeInDown' : 'fadeOutUp'} duration={125} useNativeDriver>
 			<Searchbar 
         placeholder={'Groceries, dog sitting, chat, ...'} 
         onChangeText={query => setSearchQuery(query)} 
         value={searchQuery} blurOnSubmit={true} 
         enablesReturnKeyAutomatically={true} 
       />
-    </View>
+    </Animatable.View>
   );
 }

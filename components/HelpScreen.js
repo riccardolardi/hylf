@@ -83,7 +83,7 @@ export default function HelpScreen(props) {
     <Animatable.View style={[styles.container, isOpen && styles.open]} 
       animation={isOpen ? 'fadeInDown' : null} duration={125} useNativeDriver>
   		<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} style={{flex: 1}}>
-    		<KeyboardAwareScrollView keyboardOpeningTime={50} ref={scrollViewRef} 
+    		<KeyboardAwareScrollView keyboardOpeningTime={0} ref={scrollViewRef} 
     			contentContainerStyle={styles.scrollview}>
     			<LottieView ref={lottieRef} style={[styles.lottie, isOpen && styles.open]} source={helpSrc} 
             autoPlay={false} loop={false} />

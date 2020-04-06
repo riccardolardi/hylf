@@ -30,6 +30,12 @@ const styles = StyleSheet.create({
   inner: {
     
   },
+  title: {
+    fontFamily: 'Itim',
+    fontSize: 32,
+    lineHeight: 36,
+    textAlign: 'center'
+  },
   intro: {
     paddingLeft: 16,
     paddingRight: 16,
@@ -49,12 +55,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'center'
   },
-  title: {
-    fontFamily: 'Itim',
-    fontSize: 32,
-    lineHeight: 36,
-    textAlign: 'center'
-  },
   lottie: {
     width: '80%',
     alignSelf: 'center'
@@ -72,7 +72,7 @@ export default function LoginScreen(props) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(null);
 
-  const scrollView = React.useRef(null);
+  const scrollViewRef = React.useRef(null);
 
   const register = () => {
   	props.firebase.auth().createUserWithEmailAndPassword(userEmail, userPassword)
@@ -144,7 +144,7 @@ export default function LoginScreen(props) {
     <Animatable.View style={[styles.container, isOpen && styles.open]} 
       animation={isOpen ? 'fadeInDown' : null} duration={125} useNativeDriver>
       <TouchableWithoutFeedback style={styles.touchable} onPress={Keyboard.dismiss} accessible={false}>
-        <KeyboardAwareScrollView ref={scrollView} keyboardOpeningTime={50} 
+        <KeyboardAwareScrollView ref={scrollViewRef} keyboardOpeningTime={0} 
           contentContainerStyle={styles.scrollview}>
       		<View style={styles.inner}>
             <View>

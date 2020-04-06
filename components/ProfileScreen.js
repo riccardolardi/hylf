@@ -225,7 +225,7 @@ export default function ProfileScreen(props) {
     <Animatable.View style={[styles.container, isOpen && styles.open]} 
       animation={isOpen ? 'fadeInDown' : null} duration={125} useNativeDriver>
     	<TouchableWithoutFeedback style={{flex: 1}} onPress={Keyboard.dismiss} accessible={false}>
-    		<KeyboardAwareScrollView ref={scrollViewRef} keyboardOpeningTime={50} 
+    		<KeyboardAwareScrollView ref={scrollViewRef} keyboardOpeningTime={0} 
           contentContainerStyle={styles.scrollview}>
           <Title style={[styles.title, styles.field]}>
             Hello, {userName || 'unknown hylfer!'}!

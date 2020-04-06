@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Keyboard } from 'react-native';
+import { StyleSheet, View, Keyboard, Alert } from 'react-native';
 import * as Location from 'expo-location';
 import * as Animatable from 'react-native-animatable';
 import MapView, { Marker } from 'react-native-maps';
@@ -50,6 +50,17 @@ export default function MapScreen(props) {
 
   const onLongPress = (event) => {
     Keyboard.dismiss();
+    if (!props.authState) {
+      Alert.alert(
+        'Who are you?', 
+        'To add services you need to identify yourself. Please login or register first.',
+        [
+          {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+          {text: 'OK', onPress: () => props.setCurrentScreenIndex(1)},
+        ], {cancelable: true}
+      );
+      return;
+    }
     const newLocation = {
       latitude: event.nativeEvent.coordinate.latitude 
         - 0.45 * currentRegion.latitudeDelta,
@@ -115,7 +126,10 @@ export default function MapScreen(props) {
           image={markerImg} description={marker.description} />
         )}
       </MapView>
-      <ServiceModal addService={addService} data={showServiceModal} 
+      <ServiceModal 
+        localUserData={props.localUserData} 
+        addService={addService} 
+        data={showServiceModal} 
         setData={setShowServiceModal} />
   		<SearchMap show={props.showMapSearchBar} />
 	  </Animatable.View>

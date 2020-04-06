@@ -81,7 +81,7 @@ export default function App() {
         <MapScreen 
           authState={authState} 
           setMenuOpen={setMenuOpen} 
-          localUserData={localUserData}
+          localUserData={localUserData} 
           firebase={firebase} 
           setShowLoadOL={setShowLoadOL} 
           currentScreenIndex={currentScreenIndex} 

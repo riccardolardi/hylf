@@ -114,32 +114,30 @@ export default function ProfileScreen(props) {
     if (!result.cancelled) setUserImage(result.uri);
   };
 
-  const save = () => {
-    return new Promise(async (resolve, reject) => {
-      setIsLoading(true);
-      const user = props.firebase.auth().currentUser;
-      await user.updateProfile({
-        displayName: userName,
-        photoURL: userImage
-      }).catch(error => reject(error));
-      await props.firebase.database().ref('/users/' + user.uid).set({
-        name: userName,
-        address: userAddress,
-        zip: userZIP,
-        city: userCity,
-        phone: userPhone
-      }).catch(error => reject(error));
-      if (userImage) {
-        const storageRef = props.firebase.storage().ref();
-        const userImageRef = storageRef.child(`profileImages/${user.uid}/${user.uid}.jpg`);
-        await uriToBlob(userImage).then(blob => {
-          userImageRef.put(blob, {contentType: 'image/jpeg'}).then(() => {
-            blob.close();
-          });
-        }).catch(error => reject(error));
-      }
-      resolve();
-    });
+  const save = async () => {
+    setIsLoading(true);
+    const user = props.firebase.auth().currentUser;
+    await user.updateProfile({
+      displayName: userName,
+      photoURL: userImage
+    }).catch(error => Promise.reject(error));
+    await props.firebase.database().ref('/users/' + user.uid).set({
+      name: userName,
+      address: userAddress,
+      zip: userZIP,
+      city: userCity,
+      phone: userPhone
+    }).catch(error => Promise.reject(error));
+    if (userImage) {
+      const storageRef = props.firebase.storage().ref();
+      const userImageRef = storageRef.child(`profileImages/${user.uid}/${user.uid}.jpg`);
+      await uriToBlob(userImage).then(blob => {
+        userImageRef.put(blob, {contentType: 'image/jpeg'}).then(() => {
+          blob.close();
+        });
+      }).catch(error => Promise.reject(error));
+    }
+    Promise.resolve();
   }
 
   const logout = () => {
@@ -168,15 +166,13 @@ export default function ProfileScreen(props) {
     props.setShowLoadOL('fail');
   }
 
-  const uriToBlob = (uri) => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.onload = () => resolve(xhr.response);
-      xhr.onerror = () => reject(new Error('uriToBlob failed'));
-      xhr.responseType = 'blob';
-      xhr.open('GET', uri, true);
-      xhr.send(null);
-    });
+  const uriToBlob = async (uri) => {
+    const xhr = new XMLHttpRequest();
+    xhr.onload = () => Promise.resolve(xhr.response);
+    xhr.onerror = () => Promise.reject(new Error('uriToBlob failed'));
+    xhr.responseType = 'blob';
+    xhr.open('GET', uri, true);
+    xhr.send(null);
   }
 
   const resetUserData = () => {
@@ -263,7 +259,7 @@ export default function ProfileScreen(props) {
             disabled={isLoading} />
           <TextInput mode='outlined' style={styles.field} value={userEmail} 
             label='Email' keyboardType='email-address' textContentType='emailAddress' autoCompleteType='email' 
-            onChangeText={phone => setUserEmail(email)} enablesReturnKeyAutomatically 
+            onChangeText={email => setUserEmail(email)} enablesReturnKeyAutomatically 
             disabled={true} />
           <Button icon='check' style={styles.field} color='#2da84a' mode='contained' 
             disabled={isLoading} onPress={

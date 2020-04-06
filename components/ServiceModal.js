@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Image, Keyboard } from 'react-native';
+import { StyleSheet, View, Image, Keyboard, Alert } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Modal, Portal, Text, Button, Provider, Surface, 
@@ -69,6 +69,14 @@ const styles = {
     height: 92,
     resizeMode: 'contain',
     alignSelf: 'center'
+  },
+  buttonsView: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  button: {
+    width: '47.5%'
   }
 }
 
@@ -76,6 +84,7 @@ export default function ServiceModal(props) {
 
   const scrollViewRef = React.useRef(null);
   const txtFieldRefs = [
+    React.useRef(null),
     React.useRef(null),
     React.useRef(null),
     React.useRef(null),
@@ -89,6 +98,7 @@ export default function ServiceModal(props) {
   const [serviceAddress, setServiceAddress] = React.useState(props.localUserData?.userAddress);
   const [serviceZIP, setServiceZIP] = React.useState(props.localUserData?.userZIP);
   const [serviceCity, setServiceCity] = React.useState(props.localUserData?.userCity);
+  const [serviceEmail, setServiceEmail] = React.useState(props.localUserData?.userEmail);
   const [servicePhone, setServicePhone] = React.useState(props.localUserData?.userPhone);
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -97,15 +107,59 @@ export default function ServiceModal(props) {
   }
 
   const cancelModal = () => {
-    Keyboard.dismiss();
-    props.setData(null);
+    Alert.alert(
+      'Cancel?', 
+      'Sure you want to cancel? All entered information will be lost.',
+      [
+        {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        {text: 'OK', onPress: () => {
+          props.setData(null);
+          Keyboard.dismiss();
+        }},
+      ], {cancelable: true}
+    );
   }
+
+  const save = async () => {
+    if (!serviceTitle || serviceTitle.length < 6) {
+      Alert.alert('Missing title info', 'Service title must be min. 6 characters long.');
+      return;
+    }
+    if (!serviceDescription || serviceDescription.length < 6) {
+      Alert.alert('Missing description info', 'Service description must be min. 6 characters long.');
+      return;
+    }
+    if (!serviceEmail && !servicePhone) {
+      Alert.alert('Missing contact info', 'You need to provide either an email address or a phone number.');
+      return;
+    }
+    Promise.resolve();
+  }
+
+  const actionSuccess = () => {
+    setIsLoading(false);
+    scrollViewRef.current.scrollToPosition(0, 0);
+    props.setShowLoadOL('success');
+  }
+
+  const actionFail = (error) => {
+    setIsLoading(false);
+    scrollViewRef.current.scrollToPosition(0, 0);
+    props.setShowLoadOL('fail');
+  }
+
+  React.useEffect(() => {
+    if (isLoading) {
+      props.setShowLoadOL(true);
+    }
+  }, [isLoading]);
 
   React.useEffect(() => {
     if (props.data?.show) {
       setServiceAddress(props.localUserData?.userAddress || null);
       setServiceZIP(props.localUserData?.userZIP || null);
       setServiceCity(props.localUserData?.userCity || null);
+      setServiceEmail(props.localUserData?.userEmail || null);
       setServicePhone(props.localUserData?.userPhone || null);
     }
   }, [props.data?.show]);
@@ -113,7 +167,7 @@ export default function ServiceModal(props) {
   return (
     <Provider>
       <Portal>
-        <Modal visible={props.data?.show} onDismiss={cancelModal} 
+        <Modal visible={props.data?.show} dismissable={false} 
           contentContainerStyle={styles.modal}>
           <Animatable.View style={styles.container} 
             animation={props.data?.show ? 'fadeIn' : 'fadeOut'} 
@@ -152,10 +206,22 @@ export default function ServiceModal(props) {
                     onChangeText={city => setServiceCity(city)} enablesReturnKeyAutomatically 
                     disabled={isLoading} placeholder='e.g. "Basel"' 
                     onSubmitEditing={() => tabTo(5)} blurOnSubmit={false} />
+                  <TextInput mode='outlined' style={styles.field} value={serviceEmail} 
+                    label='Email' keyboardType='email-address' textContentType='emailAddress' autoCompleteType='email' 
+                    onChangeText={email => setServiceEmail(email)} enablesReturnKeyAutomatically 
+                    ref={txtFieldRefs[5]} onSubmitEditing={() => tabTo(6)} blurOnSubmit={false} />
                   <TextInput mode='outlined' style={styles.field} value={servicePhone} 
                     label='Phone' keyboardType='numeric' textContentType='telephoneNumber' 
                     onChangeText={phone => setServicePhone(phone)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} autoCompleteType='tel' ref={txtFieldRefs[5]} />
+                    disabled={isLoading} autoCompleteType='tel' ref={txtFieldRefs[6]} />
+                  <View style={styles.buttonsView}>
+                    <Button icon='close' style={[styles.field, styles.button]} color='#ed5247' mode='contained' 
+                      disabled={isLoading} onPress={cancelModal}>Cancel</Button>
+                    <Button icon='check' style={[styles.field, styles.button]} color='#2da84a' mode='contained' 
+                      disabled={isLoading} onPress={
+                        () => save().then(() => actionSuccess()).catch(error => actionFail(error.message))
+                      }>Save</Button>
+                    </View>
                 </View>
               </KeyboardAwareScrollView>
             </Surface>

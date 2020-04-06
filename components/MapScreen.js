@@ -50,7 +50,7 @@ export default function MapScreen(props) {
 
   const onLongPress = (event) => {
     Keyboard.dismiss();
-    if (!props.authState) {
+    if (!props.authState || !props.localUserData) {
       Alert.alert(
         'Who are you?', 
         'To add services you need to identify yourself. Please login or register first.',
@@ -128,6 +128,7 @@ export default function MapScreen(props) {
       </MapView>
       <ServiceModal 
         localUserData={props.localUserData} 
+        setShowLoadOL={props.setShowLoadOL} 
         addService={addService} 
         data={showServiceModal} 
         setData={setShowServiceModal} />

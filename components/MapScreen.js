@@ -57,7 +57,7 @@ export default function MapScreen(props) {
   const [showServiceModal, setShowServiceModal] = React.useState(null);
   const [markerArray, setMarkerArray] = React.useState([]);
 
-  const getCurrentPosition = async () => {
+  const getUserPosition = async () => {
     const permissionResult = await Location.requestPermissionsAsync();
     if (!permissionResult.granted) {
       alert('Permission to location is required!');
@@ -136,6 +136,7 @@ export default function MapScreen(props) {
         item.val() && newMarkerArray.push({...item.val()});
       });
       setMarkerArray(newMarkerArray);
+      Promise.resolve();
     });
   }
 
@@ -143,6 +144,10 @@ export default function MapScreen(props) {
     setLastRegion(currentRegion);
     setCurrentRegion(event);
   }
+
+  React.useEffect(() => {
+    getUserPosition();
+  }, []);
 
   React.useEffect(() => {
     if (!showServiceModal) {
@@ -156,8 +161,10 @@ export default function MapScreen(props) {
 
   React.useEffect(() => {
     if (isOpen) {
-      getCurrentPosition();
-      loadServices();
+      loadServices().then(() => {
+        // const markerIds = markerArray.map(marker => marker.serviceId);
+        // mapViewRef.current.fitToSuppliedMarkers(markerIds);
+      });
     }
   }, [isOpen]);
 
@@ -178,14 +185,15 @@ export default function MapScreen(props) {
         onLongPress={onLongPress} 
         pitchEnabled={false} 
 	      rotateEnabled={false} 
-        minZoomLevel={10} 
-        maxZoomLevel={18} 
+        // minZoomLevel={6} 
+        // maxZoomLevel={18} 
         zoomEnabled={showServiceModal ? false : true} 
         zoomTapEnabled={showServiceModal ? false : true} 
 	      initialRegion={currentUserPosition ? currentUserPosition : null}>
         {markerArray.length !== 0 && markerArray.map((marker, i) => <Marker 
           key={i} coordinate={marker.coordinate} title={marker.title}
-            description={marker.description} tracksViewChanges={false}>
+            description={marker.description} tracksViewChanges={false}
+              identifier={marker.serviceId}>
             <Image source={markerImg} style={styles.marker} />
             <MapView.Callout>
               <View style={styles.callout}>

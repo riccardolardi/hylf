@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@animated-burgers/burger-squeeze": "^1.1.2",
+    "@bam.tech/react-native-component-map-clustering": "^1.1.1",
     "@react-native-community/masked-view": "0.1.5",
     "@react-navigation/drawer": "^5.4.0",
     "@react-navigation/native": "^5.1.4",

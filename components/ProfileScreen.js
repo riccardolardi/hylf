@@ -51,6 +51,14 @@ const styles = StyleSheet.create({
   profileError: {
     color: 'red',
     textAlign: 'center'
+  },
+  buttonsView: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  button: {
+    width: '47.5%'
   }
 })
 
@@ -120,14 +128,20 @@ export default function ProfileScreen(props) {
     await user.updateProfile({
       displayName: userName,
       photoURL: userImage
-    }).catch(error => Promise.reject(error));
+    }).catch(error => {
+      Promise.reject(error);
+      return;
+    });
     await props.firebase.database().ref('/users/' + user.uid).set({
       name: userName,
       address: userAddress,
       zip: userZIP,
       city: userCity,
       phone: userPhone
-    }).catch(error => Promise.reject(error));
+    }).catch(error => {
+      Promise.reject(error);
+      return;
+    });
     if (userImage) {
       const storageRef = props.firebase.storage().ref();
       const userImageRef = storageRef.child(`profileImages/${user.uid}/${user.uid}.jpg`);
@@ -135,7 +149,10 @@ export default function ProfileScreen(props) {
         userImageRef.put(blob, {contentType: 'image/jpeg'}).then(() => {
           blob.close();
         });
-      }).catch(error => Promise.reject(error));
+      }).catch(error => {
+        Promise.reject(error);
+        return;
+      });
     }
     Promise.resolve();
   }
@@ -261,12 +278,14 @@ export default function ProfileScreen(props) {
             label='Email' keyboardType='email-address' textContentType='emailAddress' autoCompleteType='email' 
             onChangeText={email => setUserEmail(email)} enablesReturnKeyAutomatically 
             disabled={true} />
-          <Button icon='check' style={styles.field} color='#2da84a' mode='contained' 
-            disabled={isLoading} onPress={
-              () => save().then(() => actionSuccess()).catch(error => actionFail(error.message))
-            }>Save</Button>
-          <Button icon='logout' color='#ed5247' mode='contained' 
-            disabled={isLoading} onPress={() => logout()}>Logout</Button>
+          <View style={styles.buttonsView}>
+            <Button style={[styles.field, styles.button]} icon='logout' color='#ed5247' mode='contained' 
+              disabled={isLoading} onPress={() => logout()}>Logout</Button>
+            <Button style={[styles.field, styles.button]} icon='check' color='#2da84a' mode='contained' 
+              disabled={isLoading} onPress={
+                () => save().then(() => actionSuccess()).catch(error => actionFail(error.message))
+              }>Save</Button>
+          </View>
         </KeyboardAwareScrollView>
       </TouchableWithoutFeedback>
     </Animatable.View>

@@ -1,20 +1,26 @@
 import React from 'react';
-import { StyleSheet, View, Image, Keyboard, Alert } from 'react-native';
+import { StyleSheet, View, Image, Keyboard, 
+  Alert, TouchableWithoutFeedback } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Modal, Portal, Text, Button, Provider, Surface, 
+import { Modal, Text, Button, Surface, 
   Title, Paragraph, TextInput } from 'react-native-paper';
 
 const markerImg = require('../assets/marker.png');
 const serviceImg = require('../assets/service.png');
 
 const styles = {
-  modal: {
-    ...StyleSheet.absoluteFill,
-    top: 128
+  wrap: {
+    display: 'none',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    ...StyleSheet.absoluteFill
+  },
+  show: {
+    display: 'flex'
   },
   container: {
     ...StyleSheet.absoluteFill,
+    top: 128
   },
   surface: {
     ...StyleSheet.absoluteFill,
@@ -124,7 +130,11 @@ export default function ServiceModal(props) {
     }
     setIsLoading(true);
     const data = {
-      coordinate: props.data.coordinate,
+      coordinate: {
+        ...props.currentRegion,
+        latitude: props.currentRegion.latitude 
+        + 0.45 * props.currentRegion.latitudeDelta
+      },
       title: serviceTitle,
       description: serviceDescription,
       address: serviceAddress,
@@ -159,6 +169,7 @@ export default function ServiceModal(props) {
 
   React.useEffect(() => {
     if (props.data?.show) {
+      scrollViewRef.current.scrollToPosition(0, 0, false);
       setServiceTitle(null);
       setServiceDescription(null);
       setServiceAddress(props.localUserData?.userAddress || null);
@@ -170,63 +181,58 @@ export default function ServiceModal(props) {
   }, [props.data?.show]);
 
   return (
-    <Provider>
-      <Portal>
-        <Modal visible={props.data?.show} dismissable={false} 
-          contentContainerStyle={styles.modal}>
-          <Animatable.View style={styles.container} 
-            animation={props.data?.show ? 'fadeIn' : 'fadeOut'} 
-              duration={250} useNativeDriver>
-            <Surface style={styles.surface}>
-              <Image style={styles.marker} source={markerImg} />
-              <View style={styles.triangle} />
-              <KeyboardAwareScrollView ref={scrollViewRef} keyboardOpeningTime={0} 
-                contentContainerStyle={styles.scrollview} extraHeight={136}>
-                <View style={{flex: 1}}>
-                  <Title style={[styles.title, styles.field]}>Offer some hylf!</Title>
-                  <Image source={serviceImg} style={[styles.serviceImg, styles.field]} />
-                  <Paragraph style={[styles.intro, styles.field]}>To add a new service please fill in the following form. The more info you enter, the better your service will be found.</Paragraph>
-                  <TextInput mode='outlined' style={styles.field} value={serviceTitle} 
-                    label='Service title' keyboardType='default' blurOnSubmit={true} 
-                    onChangeText={title => setServiceTitle(title)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} placeholder='e.g. "Dog sitting"' />
-                  <TextInput mode='outlined' style={styles.field} value={serviceDescription} 
-                    label='Service description' keyboardType='default' blurOnSubmit={true} multiline 
-                    onChangeText={description => setServiceDescription(description)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} placeholder='e.g. "I can offer to sit your dog on Sundays and Tuesdays from 9am to 11am, ..."' />
-                  <TextInput mode='outlined' style={styles.field} value={serviceAddress} 
-                    label='Location/Address' keyboardType='default' blurOnSubmit={true} 
-                    onChangeText={address => setServiceAddress(address)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} placeholder='e.g. "Gotthelf-Quartier"' />
-                  <TextInput mode='outlined' style={styles.field} value={serviceZIP} 
-                    label='ZIP' keyboardType='numeric' blurOnSubmit={true}
-                    onChangeText={zip => setServiceZIP(zip)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} placeholder='e.g. "4054"' />
-                  <TextInput mode='outlined' style={styles.field} value={serviceCity} 
-                    label='City' keyboardType='default' blurOnSubmit={true} 
-                    onChangeText={city => setServiceCity(city)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} placeholder='e.g. "Basel"' />
-                  <TextInput mode='outlined' style={styles.field} value={serviceEmail} blurOnSubmit={true}
-                    label='Email' keyboardType='email-address' textContentType='emailAddress' autoCompleteType='email' 
-                    onChangeText={email => setServiceEmail(email)} enablesReturnKeyAutomatically />
-                  <TextInput mode='outlined' style={styles.field} value={servicePhone} blurOnSubmit={true} 
-                    label='Phone' keyboardType='numeric' textContentType='telephoneNumber' 
-                    onChangeText={phone => setServicePhone(phone)} enablesReturnKeyAutomatically 
-                    disabled={isLoading} autoCompleteType='tel' />
-                  <View style={styles.buttonsView}>
-                    <Button icon='close' style={[styles.field, styles.button]} color='#ed5247' mode='contained' 
-                      disabled={isLoading} onPress={() => closeModal(false)}>Cancel</Button>
-                    <Button icon='check' style={[styles.field, styles.button]} color='#2da84a' mode='contained' 
-                      disabled={isLoading} onPress={
-                        () => save().then(() => actionSuccess()).catch(error => actionFail(error.message))
-                      }>Save</Button>
-                    </View>
+    <Animatable.View style={[styles.wrap, props.data?.show && styles.show]} 
+      pointerEvents='box-none' animation={props.data?.show ? 'fadeIn' : 'fadeOut'} 
+        duration={250} useNativeDriver>
+      <View style={styles.container}>
+        <Surface style={styles.surface}>
+          <Image style={styles.marker} source={markerImg} />
+          <View style={styles.triangle} />
+          <KeyboardAwareScrollView ref={scrollViewRef} keyboardOpeningTime={0} 
+            contentContainerStyle={styles.scrollview} extraHeight={136}>
+            <View style={{flex: 1}}>
+              <Title style={[styles.title, styles.field]}>Offer some hylf!</Title>
+              <Image source={serviceImg} style={[styles.serviceImg, styles.field]} />
+              <Paragraph style={[styles.intro, styles.field]}>To add a new service please fill in the following form. The more info you enter, the better your service will be found.</Paragraph>
+              <TextInput mode='outlined' style={styles.field} value={serviceTitle} 
+                label='Service title' keyboardType='default' blurOnSubmit={true} 
+                onChangeText={title => setServiceTitle(title)} enablesReturnKeyAutomatically 
+                disabled={isLoading} placeholder='e.g. "Dog sitting"' />
+              <TextInput mode='outlined' style={styles.field} value={serviceDescription} 
+                label='Service description' keyboardType='default' blurOnSubmit={true} multiline 
+                onChangeText={description => setServiceDescription(description)} enablesReturnKeyAutomatically 
+                disabled={isLoading} placeholder='e.g. "I can offer to sit your dog on Sundays and Tuesdays from 9am to 11am, ..."' />
+              <TextInput mode='outlined' style={styles.field} value={serviceAddress} 
+                label='Location/Address' keyboardType='default' blurOnSubmit={true} 
+                onChangeText={address => setServiceAddress(address)} enablesReturnKeyAutomatically 
+                disabled={isLoading} placeholder='e.g. "Gotthelf-Quartier"' />
+              <TextInput mode='outlined' style={styles.field} value={serviceZIP} 
+                label='ZIP' keyboardType='numeric' blurOnSubmit={true}
+                onChangeText={zip => setServiceZIP(zip)} enablesReturnKeyAutomatically 
+                disabled={isLoading} placeholder='e.g. "4054"' />
+              <TextInput mode='outlined' style={styles.field} value={serviceCity} 
+                label='City' keyboardType='default' blurOnSubmit={true} 
+                onChangeText={city => setServiceCity(city)} enablesReturnKeyAutomatically 
+                disabled={isLoading} placeholder='e.g. "Basel"' />
+              <TextInput mode='outlined' style={styles.field} value={serviceEmail} blurOnSubmit={true}
+                label='Email' keyboardType='email-address' textContentType='emailAddress' autoCompleteType='email' 
+                onChangeText={email => setServiceEmail(email)} enablesReturnKeyAutomatically />
+              <TextInput mode='outlined' style={styles.field} value={servicePhone} blurOnSubmit={true} 
+                label='Phone' keyboardType='numeric' textContentType='telephoneNumber' 
+                onChangeText={phone => setServicePhone(phone)} enablesReturnKeyAutomatically 
+                disabled={isLoading} autoCompleteType='tel' />
+              <View style={styles.buttonsView}>
+                <Button icon='close' style={[styles.field, styles.button]} color='#ed5247' mode='contained' 
+                  disabled={isLoading} onPress={() => closeModal(false)}>Cancel</Button>
+                <Button icon='check' style={[styles.field, styles.button]} color='#2da84a' mode='contained' 
+                  disabled={isLoading} onPress={
+                    () => save().then(() => actionSuccess()).catch(error => actionFail(error.message))
+                  }>Save</Button>
                 </View>
-              </KeyboardAwareScrollView>
-            </Surface>
-          </Animatable.View>
-        </Modal>
-      </Portal>
-    </Provider>
+            </View>
+          </KeyboardAwareScrollView>
+        </Surface>
+      </View>
+    </Animatable.View>
   );
 }

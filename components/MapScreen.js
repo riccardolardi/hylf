@@ -1,8 +1,11 @@
 import React from 'react';
-import { StyleSheet, View, Keyboard, Alert } from 'react-native';
+import { StyleSheet, View, Keyboard, Alert, Image } from 'react-native';
 import * as Location from 'expo-location';
 import * as Animatable from 'react-native-animatable';
+// import MapView from 'react-native-map-clustering';
 import MapView, { Marker } from 'react-native-maps';
+import { Modal, Text, Button, Surface, 
+  Title, Paragraph, TextInput } from 'react-native-paper';
 import ServiceModal from './ServiceModal';
 import SearchMap from './SearchMap.js';
 
@@ -19,7 +22,28 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFill
-  }
+  },
+  marker: {
+    width: 42,
+    height: 42
+  },
+  callout: {
+    width: 212
+  },
+  title: {
+    fontFamily: 'Itim',
+    fontSize: 24,
+    lineHeight: 32,
+    paddingLeft: 8,
+    paddingRight: 8
+  },
+  text: {
+    paddingLeft: 8,
+    paddingRight: 8
+  },
+  field: {
+    marginBottom: 8
+  },
 });
 
 export default function MapScreen(props) {
@@ -71,20 +95,12 @@ export default function MapScreen(props) {
     mapViewRef.current.animateToRegion(newLocation, 125);
     setShowServiceModal({
       show: true,
-      mode: 'add',
-      coordinate: event.nativeEvent.coordinate
+      mode: 'add'
     });
   }
 
   const addService = async (data) => {
-    setMarkerArray(markerArray.concat({
-      latlng: data.coordinate,
-      title: data.title,
-      description: data.description
-    }));
-    const user = props.firebase.auth().currentUser;
-    const serviceId = user.uid + '-' + Date.now(); // sloppy
-    await props.firebase.database().ref('/services/' + serviceId).set({
+    const markerData = {
       coordinate: data.coordinate,
       title: data.title,
       description: data.description,
@@ -97,10 +113,16 @@ export default function MapScreen(props) {
       userId: user.uid,
       serviceId: serviceId,
       creationDate: Date.now()
-    }).catch(error => {
+    }
+    setMarkerArray(markerArray.concat(markerData));
+    const user = props.firebase.auth().currentUser;
+    const serviceId = user.uid + '-' + Date.now(); // sloppy
+    await props.firebase.database().ref('/services/' + serviceId)
+      .set(markerData).catch(error => {
       Promise.reject(error);
       return;
     });
+    setLastRegion(null);
     setTimeout(() => 
       mapViewRef.current.animateToRegion(data.coordinate, 125), 1000);
     Promise.resolve();
@@ -110,12 +132,7 @@ export default function MapScreen(props) {
     await props.firebase.database().ref('/services').once('value').then(snapshot => {
       const newMarkerArray = [];
       snapshot.val() && snapshot.forEach(item => {
-        item.val() && newMarkerArray.push({
-          latlng: item.val().coordinate,
-          title: item.val().title,
-          description: item.val().description,
-          data: item.val()
-        });
+        item.val() && newMarkerArray.push({...item.val()});
       });
       setMarkerArray(newMarkerArray);
     });
@@ -124,6 +141,10 @@ export default function MapScreen(props) {
   const onRegionChangeComplete = (event) => {
     setLastRegion(currentRegion);
     setCurrentRegion(event);
+  }
+
+  const markerPressed = (event, marker) => {
+    console.log(marker);
   }
 
   React.useEffect(() => {
@@ -162,8 +183,21 @@ export default function MapScreen(props) {
 	      rotateEnabled={false} 
 	      initialRegion={currentUserPosition ? currentUserPosition : null}>
         {markerArray.length !== 0 && markerArray.map((marker, i) => <Marker 
-          key={i} coordinate={marker.latlng} title={marker.title}
-          image={markerImg} description={marker.description} />
+          key={i} coordinate={marker.coordinate} title={marker.title}
+            description={marker.description} tracksViewChanges={false}>
+            <Image source={markerImg} style={styles.marker} />
+            <MapView.Callout>
+              <View style={styles.callout}>
+                <Title style={[styles.field, styles.title]}>{marker.title}</Title>
+                <Text style={[styles.field, styles.text]}>{marker.description}</Text>
+                {marker.address && <Text style={[styles.field, styles.text]}>{marker.address}</Text>}
+                {marker.zip && <Text style={[styles.field, styles.text]}>{marker.zip}</Text>}
+                {marker.city && <Text style={[styles.field, styles.text]}>{marker.city}</Text>}
+                {marker.email && <Text style={[styles.field, styles.text]}>{marker.email}</Text>}
+                {marker.phone && <Text style={[styles.field, styles.text]}>{marker.phone}</Text>}
+              </View>
+            </MapView.Callout>
+          </Marker>
         )}
       </MapView>
       <ServiceModal 
@@ -171,7 +205,8 @@ export default function MapScreen(props) {
         setShowLoadOL={props.setShowLoadOL} 
         addService={addService} 
         data={showServiceModal} 
-        setData={setShowServiceModal} />
+        setData={setShowServiceModal} 
+        currentRegion={currentRegion} />
   		<SearchMap show={props.showMapSearchBar} />
 	  </Animatable.View>
 	);

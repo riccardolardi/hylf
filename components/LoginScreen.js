@@ -129,10 +129,7 @@ export default function LoginScreen(props) {
   }, [isOpen]);
 
   React.useEffect(() => {
-    if (isLoading) {
-      props.setShowLoadOL(true);
-      setLoginError(null);
-    }
+    if (isLoading) props.setShowLoadOL(true);
   }, [isLoading]);
 
   React.useEffect(() => {

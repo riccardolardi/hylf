@@ -67,12 +67,13 @@ export default function MapScreen(props) {
     if (!locationResult) return;
     setCurrentUserPosition({
       ...locationResult.coords,
-      latitudeDelta: 0.05,
-      longitudeDelta: 0.05
+      latitudeDelta: 0.03,
+      longitudeDelta: 0.03
     });
   }
 
   const onLongPress = (event) => {
+    if (showServiceModal) return;
     Keyboard.dismiss();
     if (!props.localUserData) {
       Alert.alert(
@@ -100,6 +101,8 @@ export default function MapScreen(props) {
   }
 
   const addService = async (data) => {
+    const user = props.firebase.auth().currentUser;
+    const serviceId = user.uid + '-' + Date.now(); // sloppy
     const markerData = {
       coordinate: data.coordinate,
       title: data.title,
@@ -115,8 +118,6 @@ export default function MapScreen(props) {
       creationDate: Date.now()
     }
     setMarkerArray(markerArray.concat(markerData));
-    const user = props.firebase.auth().currentUser;
-    const serviceId = user.uid + '-' + Date.now(); // sloppy
     await props.firebase.database().ref('/services/' + serviceId)
       .set(markerData).catch(error => {
       Promise.reject(error);
@@ -141,10 +142,6 @@ export default function MapScreen(props) {
   const onRegionChangeComplete = (event) => {
     setLastRegion(currentRegion);
     setCurrentRegion(event);
-  }
-
-  const markerPressed = (event, marker) => {
-    console.log(marker);
   }
 
   React.useEffect(() => {
@@ -181,6 +178,10 @@ export default function MapScreen(props) {
         onLongPress={onLongPress} 
         pitchEnabled={false} 
 	      rotateEnabled={false} 
+        minZoomLevel={10} 
+        maxZoomLevel={18} 
+        zoomEnabled={showServiceModal ? false : true} 
+        zoomTapEnabled={showServiceModal ? false : true} 
 	      initialRegion={currentUserPosition ? currentUserPosition : null}>
         {markerArray.length !== 0 && markerArray.map((marker, i) => <Marker 
           key={i} coordinate={marker.coordinate} title={marker.title}

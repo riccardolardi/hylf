@@ -34,7 +34,7 @@ const styles = {
   },
   marker: {
     position: 'absolute',
-    top: -68,
+    top: -68 - 12,
     resizeMode: 'contain',
     width: 42,
     height: 42
@@ -99,22 +99,6 @@ export default function ServiceModal(props) {
   const [servicePhone, setServicePhone] = React.useState(props.localUserData?.userPhone);
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const closeModal = (force) => {
-    Keyboard.dismiss();
-    if (force) {
-      props.setData(null);
-      return;
-    }
-    Alert.alert(
-      'Cancel?', 
-      'Sure you want to cancel? All entered information will be lost.',
-      [
-        {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-        {text: 'OK', onPress: () => props.setData(null)},
-      ], {cancelable: true}
-    );
-  }
-
   const save = async () => {
     if (!serviceTitle || serviceTitle.length < 6) {
       Alert.alert('Missing title info', 'Service title must be min. 6 characters long.');
@@ -145,7 +129,7 @@ export default function ServiceModal(props) {
     }
     props.addService(data).then(() => {
       Promise.resolve();
-      closeModal(true);
+      props.closeServiceModal(true);
     }).catch(error => Promise.reject(error));
   }
 
@@ -223,7 +207,7 @@ export default function ServiceModal(props) {
                 disabled={isLoading} autoCompleteType='tel' />
               <View style={styles.buttonsView}>
                 <Button icon='close' style={[styles.field, styles.button]} color='#ed5247' mode='contained' 
-                  disabled={isLoading} onPress={() => closeModal(false)}>Cancel</Button>
+                  disabled={isLoading} onPress={() => props.closeServiceModal(false)}>Cancel</Button>
                 <Button icon='check' style={[styles.field, styles.button]} color='#2da84a' mode='contained' 
                   disabled={isLoading} onPress={
                     () => save().then(() => actionSuccess()).catch(error => actionFail(error.message))

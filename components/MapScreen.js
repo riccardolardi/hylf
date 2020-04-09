@@ -1,11 +1,12 @@
 import React from 'react';
-import { StyleSheet, View, Keyboard, Alert, Image } from 'react-native';
+import { StyleSheet, View, Keyboard, 
+  Alert, Image, Linking } from 'react-native';
 import * as Location from 'expo-location';
 import * as Animatable from 'react-native-animatable';
-// import MapView from 'react-native-map-clustering';
+import * as MailComposer from 'expo-mail-composer';
 import MapView, { Marker } from 'react-native-maps';
 import { Modal, Text, Button, Surface, 
-  Title, Paragraph, TextInput } from 'react-native-paper';
+  Title, Paragraph, TextInput, Divider } from 'react-native-paper';
 import ServiceModal from './ServiceModal';
 import SearchMap from './SearchMap.js';
 
@@ -44,6 +45,15 @@ const styles = StyleSheet.create({
   field: {
     marginBottom: 8
   },
+  link: {
+    textDecorationLine: 'underline'
+  },
+  button: {
+    marginTop: 8,
+  },
+  address: {
+    marginTop: 8
+  }
 });
 
 export default function MapScreen(props) {
@@ -70,6 +80,10 @@ export default function MapScreen(props) {
       latitudeDelta: 0.03,
       longitudeDelta: 0.03
     });
+  }
+
+  const onPress = (event) => {
+    if (showServiceModal) closeServiceModal();
   }
 
   const onLongPress = (event) => {
@@ -123,7 +137,6 @@ export default function MapScreen(props) {
       Promise.reject(error);
       return;
     });
-    setLastRegion(null);
     setTimeout(() => 
       mapViewRef.current.animateToRegion(data.coordinate, 125), 1000);
     Promise.resolve();
@@ -140,9 +153,40 @@ export default function MapScreen(props) {
     });
   }
 
+  const closeServiceModal = (force) => {
+    Keyboard.dismiss();
+    if (force) {
+      setShowServiceModal(null);
+      return;
+    }
+    Alert.alert(
+      'Cancel?', 
+      'Sure you want to cancel? All entered information will be lost.',
+      [
+        {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        {text: 'OK', onPress: () => setShowServiceModal(null)},
+      ], {cancelable: true}
+    );
+  }
+
   const onRegionChangeComplete = (event) => {
-    setLastRegion(currentRegion);
     setCurrentRegion(event);
+  }
+
+  const setSearchString = (searchString) => {
+    
+  }
+
+  const sendMail = (recipient) => {
+    MailComposer.composeAsync({saveOptions: {
+      recipients: [recipient]
+    }}).then(result => {
+      // ...
+    }).catch(error => Alert.alert('Oh no!', error.message));
+  }
+
+  const startCall = (number) => {
+    Linking.openURL(`tel:${number}`);
   }
 
   React.useEffect(() => {
@@ -150,13 +194,10 @@ export default function MapScreen(props) {
   }, []);
 
   React.useEffect(() => {
-    if (!showServiceModal) {
-      const newMarkerArray = markerArray.filter(x => x.title !== 'tmp');
-      setMarkerArray(newMarkerArray);
-      lastRegion && mapViewRef.current.animateToRegion(lastRegion, 125);
-    }
     props.setShowMenuToggle(!showServiceModal);
     props.setShowMapSearchBar(!showServiceModal);
+    setLastRegion(showServiceModal ? currentRegion : null);
+    lastRegion && mapViewRef.current.animateToRegion(lastRegion, 125);
   }, [showServiceModal]);
 
   React.useEffect(() => {
@@ -182,9 +223,11 @@ export default function MapScreen(props) {
 	      onPress={Keyboard.dismiss} 
 	      onRegionChange={Keyboard.dismiss} 
         onRegionChangeComplete={onRegionChangeComplete} 
+        onPress={onPress} 
         onLongPress={onLongPress} 
         pitchEnabled={false} 
 	      rotateEnabled={false} 
+        mapPadding={{top: 100}} 
         // minZoomLevel={6} 
         // maxZoomLevel={18} 
         zoomEnabled={showServiceModal ? false : true} 
@@ -193,17 +236,24 @@ export default function MapScreen(props) {
         {markerArray.length !== 0 && markerArray.map((marker, i) => <Marker 
           key={i} coordinate={marker.coordinate} title={marker.title}
             description={marker.description} tracksViewChanges={false}
-              identifier={marker.serviceId}>
+              identifier={marker.serviceId} centerOffset={{x: 0, y: -12}} 
+                style={{display: showServiceModal ? 'none' : 'flex'}}>
             <Image source={markerImg} style={styles.marker} />
             <MapView.Callout>
               <View style={styles.callout}>
                 <Title style={[styles.field, styles.title]}>{marker.title}</Title>
                 <Text style={[styles.field, styles.text]}>{marker.description}</Text>
-                {marker.address && <Text style={[styles.field, styles.text]}>{marker.address}</Text>}
-                {marker.zip && <Text style={[styles.field, styles.text]}>{marker.zip}</Text>}
-                {marker.city && <Text style={[styles.field, styles.text]}>{marker.city}</Text>}
-                {marker.email && <Text style={[styles.field, styles.text]}>{marker.email}</Text>}
-                {marker.phone && <Text style={[styles.field, styles.text]}>{marker.phone}</Text>}
+                <Divider />
+                <View style={styles.address}>
+                  {marker.address ? <Text style={[styles.field, styles.text]}>{marker.address}</Text> : null}
+                  {(marker.zip || marker.city) ? <Text style={[styles.field, styles.text]}>
+                    {`${marker.zip ? marker.zip : ''}${(marker.zip && marker.city) ? ', ' : ''}${marker.city ? marker.city : ''}`}
+                  </Text> : null}
+                  {marker.email ? <Text style={[styles.field, styles.text, styles.link]} 
+                    onPress={() => sendMail(marker.email)}>{marker.email}</Text> : null}
+                  {marker.phone ? <Button icon='phone' mode='contained' style={[styles.field, styles.button]} 
+                    uppercase={false} onPress={() => startCall(marker.phone)}>{marker.phone}</Button> : null}
+                </View>
               </View>
             </MapView.Callout>
           </Marker>
@@ -215,8 +265,10 @@ export default function MapScreen(props) {
         addService={addService} 
         data={showServiceModal} 
         setData={setShowServiceModal} 
+        closeServiceModal={closeServiceModal} 
         currentRegion={currentRegion} />
-  		<SearchMap show={props.showMapSearchBar} />
+  		<SearchMap show={props.showMapSearchBar} 
+        setSearchString={setSearchString} />
 	  </Animatable.View>
 	);
 }

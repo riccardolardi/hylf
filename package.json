@@ -9,11 +9,10 @@
   },
   "dependencies": {
     "@animated-burgers/burger-squeeze": "^1.1.2",
-    "@bam.tech/react-native-component-map-clustering": "^1.1.1",
     "@react-native-community/masked-view": "0.1.5",
-    "@react-navigation/drawer": "^5.4.0",
-    "@react-navigation/native": "^5.1.4",
-    "@react-navigation/stack": "^5.2.9",
+    "@react-navigation/drawer": "^5.4.1",
+    "@react-navigation/native": "^5.1.5",
+    "@react-navigation/stack": "^5.2.10",
     "classnames": "^2.2.6",
     "expo": "~36.0.0",
     "expo-app-auth": "~8.0.0",
@@ -45,7 +44,7 @@
     "babel-preset-expo": "~8.0.0",
     "css-to-react-native-transform": "^1.9.0",
     "node-sass": "^4.13.1",
-    "react-native-paper": "^3.7.0",
+    "react-native-paper": "^3.8.0",
     "react-native-sass-transformer": "^1.4.0"
   },
   "private": true

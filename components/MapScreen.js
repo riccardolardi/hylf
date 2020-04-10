@@ -121,6 +121,7 @@ export default function MapScreen(props) {
       coordinate: data.coordinate,
       title: data.title,
       description: data.description,
+      username: data.username,
       address: data.address,
       zip: data.zip,
       city: data.city,
@@ -174,7 +175,14 @@ export default function MapScreen(props) {
   }
 
   const setSearchString = (searchString) => {
-    
+  }
+
+  const onMarkerSelect = (event) => {
+    props.setShowMapSearchBar(false);
+  }
+
+  const onMarkerDeselect = (event) => {
+    props.setShowMapSearchBar(true);
   }
 
   const sendMail = (recipient) => {
@@ -228,6 +236,8 @@ export default function MapScreen(props) {
         pitchEnabled={false} 
 	      rotateEnabled={false} 
         mapPadding={{top: 100}} 
+        onMarkerSelect={onMarkerSelect} 
+        onMarkerDeselect={onMarkerDeselect} 
         // minZoomLevel={6} 
         // maxZoomLevel={18} 
         zoomEnabled={showServiceModal ? false : true} 
@@ -242,6 +252,7 @@ export default function MapScreen(props) {
             <MapView.Callout>
               <View style={styles.callout}>
                 <Title style={[styles.field, styles.title]}>{marker.title}</Title>
+                {marker.username ? <Text style={[styles.field, styles.text]}>{marker.username}</Text> : null}
                 <Text style={[styles.field, styles.text]}>{marker.description}</Text>
                 <Divider />
                 <View style={styles.address}>

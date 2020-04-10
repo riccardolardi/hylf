@@ -92,6 +92,7 @@ export default function ServiceModal(props) {
 
   const [serviceTitle, setServiceTitle] = React.useState(null);
   const [serviceDescription, setServiceDescription] = React.useState(null);
+  const [serviceUserName, setServiceUserName] = React.useState(props.localUserData?.userName);
   const [serviceAddress, setServiceAddress] = React.useState(props.localUserData?.userAddress);
   const [serviceZIP, setServiceZIP] = React.useState(props.localUserData?.userZIP);
   const [serviceCity, setServiceCity] = React.useState(props.localUserData?.userCity);
@@ -108,6 +109,10 @@ export default function ServiceModal(props) {
       Alert.alert('Missing description info', 'Service description must be min. 6 characters long.');
       return;
     }
+    if (!serviceUserName) {
+      Alert.alert('Missing contact name', 'Please enter a contact name.');
+      return;
+    }
     if (!serviceEmail && !servicePhone) {
       Alert.alert('Missing contact info', 'You need to provide either an email address or a phone number.');
       return;
@@ -121,6 +126,7 @@ export default function ServiceModal(props) {
       },
       title: serviceTitle,
       description: serviceDescription,
+      username: serviceUserName,
       address: serviceAddress,
       zip: serviceZIP,
       city: serviceCity,
@@ -156,6 +162,7 @@ export default function ServiceModal(props) {
       scrollViewRef.current.scrollToPosition(0, 0, false);
       setServiceTitle(null);
       setServiceDescription(null);
+      setServiceUserName(props.localUserData?.userName || null);
       setServiceAddress(props.localUserData?.userAddress || null);
       setServiceZIP(props.localUserData?.userZIP || null);
       setServiceCity(props.localUserData?.userCity || null);
@@ -186,6 +193,10 @@ export default function ServiceModal(props) {
                 label='Service description' keyboardType='default' blurOnSubmit={true} multiline 
                 onChangeText={description => setServiceDescription(description)} enablesReturnKeyAutomatically 
                 disabled={isLoading} placeholder='e.g. "I can offer to sit your dog on Sundays and Tuesdays from 9am to 11am, ..."' />
+              <TextInput mode='outlined' style={styles.field} value={serviceUserName} 
+                label='Contact person name' keyboardType='default' blurOnSubmit={true} 
+                onChangeText={name => setServiceUserName(name)} enablesReturnKeyAutomatically 
+                disabled={isLoading} placeholder='e.g. "Roger Federer"' />
               <TextInput mode='outlined' style={styles.field} value={serviceAddress} 
                 label='Location/Address' keyboardType='default' blurOnSubmit={true} 
                 onChangeText={address => setServiceAddress(address)} enablesReturnKeyAutomatically 
@@ -200,11 +211,11 @@ export default function ServiceModal(props) {
                 disabled={isLoading} placeholder='e.g. "Basel"' />
               <TextInput mode='outlined' style={styles.field} value={serviceEmail} blurOnSubmit={true}
                 label='Email' keyboardType='email-address' textContentType='emailAddress' autoCompleteType='email' 
-                onChangeText={email => setServiceEmail(email)} enablesReturnKeyAutomatically />
+                onChangeText={email => setServiceEmail(email)} disabled={true} enablesReturnKeyAutomatically />
               <TextInput mode='outlined' style={styles.field} value={servicePhone} blurOnSubmit={true} 
                 label='Phone' keyboardType='numeric' textContentType='telephoneNumber' 
                 onChangeText={phone => setServicePhone(phone)} enablesReturnKeyAutomatically 
-                disabled={isLoading} autoCompleteType='tel' />
+                disabled={true} autoCompleteType='tel' />
               <View style={styles.buttonsView}>
                 <Button icon='close' style={[styles.field, styles.button]} color='#ed5247' mode='contained' 
                   disabled={isLoading} onPress={() => props.closeServiceModal(false)}>Cancel</Button>

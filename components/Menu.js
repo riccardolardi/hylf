@@ -64,10 +64,6 @@ export default function Menu(props) {
     setTimeout(() => props.setMenuOpen(false), 125);
   }
 
-  React.useEffect(() => {
-
-  }, []);
-
   return (
     <Animatable.View style={[styles.container, props.menuOpen && styles.menuOpen]} 
       transition={['bottom', 'opacity']} duration={500}>

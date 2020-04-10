@@ -5,7 +5,7 @@ import { Searchbar } from 'react-native-paper';
 
 export default function SearchMap(props) {
 
-	const [searchQuery, setSearchQuery] = React.useState('');
+	const [searchString, setSearchString] = React.useState('');
 
 	const styles = {
 		container: {
@@ -16,13 +16,17 @@ export default function SearchMap(props) {
 		}
 	}
 
+	React.useEffect(() => {
+		props.setSearchString(searchString);
+	}, [searchString]);
+
   return (
     <Animatable.View style={styles.container} 
       animation={props.show ? 'fadeInDown' : 'fadeOutUp'} duration={125} useNativeDriver>
 			<Searchbar 
         placeholder={'Groceries, dog sitting, chat, ...'} 
-        onChangeText={query => setSearchQuery(query)} 
-        value={searchQuery} blurOnSubmit={true} 
+        onChangeText={query => setSearchString(query)} 
+        value={searchString} blurOnSubmit={true} 
         enablesReturnKeyAutomatically={true} 
       />
     </Animatable.View>

@@ -83,6 +83,7 @@ export default function MapScreen(props) {
   }
 
   const onPress = (event) => {
+    Keyboard.dismiss();
     if (showServiceModal) closeServiceModal();
   }
 
@@ -175,14 +176,12 @@ export default function MapScreen(props) {
   }
 
   const setSearchString = (searchString) => {
-  }
+    if (searchString.length <= 2) {
 
-  const onMarkerSelect = (event) => {
-    props.setShowMapSearchBar(false);
-  }
+    } else {
+      
+    }
 
-  const onMarkerDeselect = (event) => {
-    props.setShowMapSearchBar(true);
   }
 
   const sendMail = (recipient) => {
@@ -219,7 +218,7 @@ export default function MapScreen(props) {
 
   React.useEffect(() => {
     const open = props.currentScreenIndex === props.screenIndex;
-    setTimeout(() => setIsOpen(open), 375);
+    setTimeout(() => setIsOpen(open), 125);
   }, [props.currentScreenIndex]);
 	
   return (
@@ -236,10 +235,6 @@ export default function MapScreen(props) {
         pitchEnabled={false} 
 	      rotateEnabled={false} 
         mapPadding={{top: 100}} 
-        onMarkerSelect={onMarkerSelect} 
-        onMarkerDeselect={onMarkerDeselect} 
-        // minZoomLevel={6} 
-        // maxZoomLevel={18} 
         zoomEnabled={showServiceModal ? false : true} 
         zoomTapEnabled={showServiceModal ? false : true} 
 	      initialRegion={currentUserPosition ? currentUserPosition : null}>
@@ -247,7 +242,8 @@ export default function MapScreen(props) {
           key={i} coordinate={marker.coordinate} title={marker.title}
             description={marker.description} tracksViewChanges={false}
               identifier={marker.serviceId} centerOffset={{x: 0, y: -12}} 
-                style={{display: showServiceModal ? 'none' : 'flex'}}>
+                style={{display: showServiceModal ? 'none' : 'flex', 
+                  opacity: marker.filtered ? 0.25 : 1.0}}>
             <Image source={markerImg} style={styles.marker} />
             <MapView.Callout>
               <View style={styles.callout}>

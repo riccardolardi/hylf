@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import * as RootNav from './RootNav.js';
 import * as Animatable from 'react-native-animatable';
 import { Text, Snackbar } from 'react-native-paper';
 

@@ -134,7 +134,7 @@ export default function LoginScreen(props) {
 
   React.useEffect(() => {
     const open = props.currentScreenIndex === props.screenIndex;
-    setTimeout(() => setIsOpen(open), 375);
+    setTimeout(() => setIsOpen(open), 125);
   }, [props.currentScreenIndex]);
 
   return (

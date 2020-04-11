@@ -48,6 +48,10 @@ const styles = {
   }
 }
 
+const settings = {
+  screenInDelay: 500
+}
+
 export default function App() {
 
   const [authState, setAuthState] = React.useState(null);
@@ -89,7 +93,8 @@ export default function App() {
           showMapSearchBar={showMapSearchBar} 
           setShowMapSearchBar={setShowMapSearchBar} 
           setShowMenuToggle={setShowMenuToggle} 
-          screenIndex={0} />
+          screenIndex={0} 
+          screenInDelay={settings.screenInDelay} />
         <LoginScreen 
           authState={authState} 
           setMenuOpen={setMenuOpen} 
@@ -99,7 +104,8 @@ export default function App() {
           setShowLoadOL={setShowLoadOL} 
           currentScreenIndex={currentScreenIndex} 
           setCurrentScreenIndex={setCurrentScreenIndex} 
-          screenIndex={1} />
+          screenIndex={1} 
+          screenInDelay={settings.screenInDelay} />
         <ProfileScreen 
           authState={authState} 
           setMenuOpen={setMenuOpen} 
@@ -109,14 +115,16 @@ export default function App() {
           setShowLoadOL={setShowLoadOL} 
           currentScreenIndex={currentScreenIndex} 
           setCurrentScreenIndex={setCurrentScreenIndex} 
-          screenIndex={2} />
+          screenIndex={2} 
+          screenInDelay={settings.screenInDelay} />
         <HelpScreen 
           authState={authState} 
           setMenuOpen={setMenuOpen} 
           localUserData={localUserData} 
           currentScreenIndex={currentScreenIndex} 
           setCurrentScreenIndex={setCurrentScreenIndex} 
-          screenIndex={3} />
+          screenIndex={3} 
+          screenInDelay={settings.screenInDelay} />
       </View>
       <Menu 
         authState={authState} 

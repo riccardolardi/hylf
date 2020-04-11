@@ -58,7 +58,6 @@ export default function Menu(props) {
   const helpButtonRef = React.useRef(null);
 
   const navTo = async (index, ref) => {
-    await ref.current.pulse(125);
     if (props.authState && index === 1) index = 2;
     props.setCurrentScreenIndex(index);
     setTimeout(() => props.setMenuOpen(false), 125);

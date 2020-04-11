@@ -36,10 +36,6 @@ export default function MenuToggle(props) {
 
   const buttonRef = React.createRef(null);
 
-  React.useEffect(() => {
-
-  }, []);
-
   return (
   	<Animatable.View style={styles.container} pointerEvents='box-none' 
       animation={props.show ? 'fadeInUp' : 'fadeOutDown'} duration={125} 

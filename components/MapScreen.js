@@ -218,7 +218,7 @@ export default function MapScreen(props) {
 
   React.useEffect(() => {
     const open = props.currentScreenIndex === props.screenIndex;
-    setTimeout(() => setIsOpen(open), 125);
+    setTimeout(() => setIsOpen(open), props.screenInDelay);
   }, [props.currentScreenIndex]);
 	
   return (
@@ -241,9 +241,9 @@ export default function MapScreen(props) {
         {markerArray.length !== 0 && markerArray.map((marker, i) => <Marker 
           key={i} coordinate={marker.coordinate} title={marker.title}
             description={marker.description} tracksViewChanges={false}
-              identifier={marker.serviceId} centerOffset={{x: 0, y: -12}} 
+              identifier={marker.serviceId} centerOffset={{x: 0, y: 0}} 
                 style={{display: showServiceModal ? 'none' : 'flex', 
-                  opacity: marker.filtered ? 0.25 : 1.0}}>
+                  opacity: marker.filtered ? 0.25 : 1.0}} stopPropagation>
             <Image source={markerImg} style={styles.marker} />
             <MapView.Callout>
               <View style={styles.callout}>

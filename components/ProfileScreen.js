@@ -218,7 +218,7 @@ export default function ProfileScreen(props) {
 
   React.useEffect(() => {
     const open = props.currentScreenIndex === props.screenIndex;
-    setTimeout(() => setIsOpen(open), 125);
+    setTimeout(() => setIsOpen(open), props.screenInDelay);
   }, [props.currentScreenIndex]);
 
   React.useEffect(() => {

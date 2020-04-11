@@ -34,7 +34,7 @@ const styles = {
   },
   marker: {
     position: 'absolute',
-    top: -68 - 12,
+    top: -68,
     resizeMode: 'contain',
     width: 42,
     height: 42

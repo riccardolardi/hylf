@@ -11,6 +11,7 @@ import ServiceModal from './ServiceModal';
 import SearchMap from './SearchMap.js';
 
 const markerImg = require('../assets/marker.png');
+const markerCenterOffset = {x: 0, y: -16};
 
 const styles = StyleSheet.create({
   container: {
@@ -241,7 +242,7 @@ export default function MapScreen(props) {
         {markerArray.length !== 0 && markerArray.map((marker, i) => <Marker 
           key={i} coordinate={marker.coordinate} title={marker.title}
             description={marker.description} tracksViewChanges={false}
-              identifier={marker.serviceId} centerOffset={{x: 0, y: 0}} 
+              identifier={marker.serviceId} centerOffset={markerCenterOffset} 
                 style={{display: showServiceModal ? 'none' : 'flex', 
                   opacity: marker.filtered ? 0.25 : 1.0}} stopPropagation>
             <Image source={markerImg} style={styles.marker} />
@@ -273,7 +274,8 @@ export default function MapScreen(props) {
         data={showServiceModal} 
         setData={setShowServiceModal} 
         closeServiceModal={closeServiceModal} 
-        currentRegion={currentRegion} />
+        currentRegion={currentRegion} 
+        markerCenterOffset={markerCenterOffset} />
   		<SearchMap show={props.showMapSearchBar} 
         setSearchString={setSearchString} />
 	  </Animatable.View>

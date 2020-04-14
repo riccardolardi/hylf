@@ -9,84 +9,84 @@ import { Modal, Text, Button, Surface,
 const markerImg = require('../assets/marker.png');
 const serviceImg = require('../assets/service.png');
 
-const styles = {
-  wrap: {
-    display: 'none',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    ...StyleSheet.absoluteFill
-  },
-  show: {
-    display: 'flex'
-  },
-  container: {
-    ...StyleSheet.absoluteFill,
-    top: 128
-  },
-  surface: {
-    ...StyleSheet.absoluteFill,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    top: 0,
-    right: 16,
-    bottom: 24,
-    left: 16
-  },
-  marker: {
-    position: 'absolute',
-    top: -68,
-    resizeMode: 'contain',
-    width: 42,
-    height: 42
-  },
-  triangle: {
-    position: 'absolute',
-    top: -10,
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderBottomWidth: 10,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: 'white'
-  },
-  title: {
-    fontFamily: 'Itim',
-    fontSize: 32,
-    lineHeight: 36,
-    textAlign: 'center'
-  },
-  intro: {
-    paddingLeft: 16,
-    paddingRight: 16,
-    textAlign: 'center'
-  },
-  field: {
-    marginBottom: 16
-  },
-  scrollview: {
-    padding: 16,
-  },
-  serviceImg: {
-    width: 92,
-    height: 92,
-    resizeMode: 'contain',
-    alignSelf: 'center'
-  },
-  buttonsView: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between'
-  },
-  button: {
-    width: '47.5%'
-  }
-}
-
 export default function ServiceModal(props) {
+
+  const styles = {
+    wrap: {
+      display: 'none',
+      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+      ...StyleSheet.absoluteFill
+    },
+    show: {
+      display: 'flex'
+    },
+    container: {
+      ...StyleSheet.absoluteFill,
+      top: 128
+    },
+    surface: {
+      ...StyleSheet.absoluteFill,
+      borderRadius: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      top: 0,
+      right: 16,
+      bottom: 24,
+      left: 16
+    },
+    marker: {
+      position: 'absolute',
+      top: -68 + props.markerCenterOffset.y,
+      resizeMode: 'contain',
+      width: 42,
+      height: 42
+    },
+    triangle: {
+      position: 'absolute',
+      top: -10,
+      width: 0,
+      height: 0,
+      backgroundColor: 'transparent',
+      borderStyle: 'solid',
+      borderLeftWidth: 10,
+      borderRightWidth: 10,
+      borderBottomWidth: 10,
+      borderLeftColor: 'transparent',
+      borderRightColor: 'transparent',
+      borderBottomColor: 'white'
+    },
+    title: {
+      fontFamily: 'Itim',
+      fontSize: 32,
+      lineHeight: 36,
+      textAlign: 'center'
+    },
+    intro: {
+      paddingLeft: 16,
+      paddingRight: 16,
+      textAlign: 'center'
+    },
+    field: {
+      marginBottom: 16
+    },
+    scrollview: {
+      padding: 16,
+    },
+    serviceImg: {
+      width: 92,
+      height: 92,
+      resizeMode: 'contain',
+      alignSelf: 'center'
+    },
+    buttonsView: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between'
+    },
+    button: {
+      width: '47.5%'
+    }
+  }
 
   const scrollViewRef = React.useRef(null);
 

@@ -44,7 +44,7 @@
     "@babel/core": "^7.9.0",
     "babel-preset-expo": "^8.1.0",
     "css-to-react-native-transform": "^1.9.0",
-    "node-sass": "^4.13.1",
+    "node-sass": "^7.0.0",
     "react-native-paper": "^3.8.0",
     "react-native-sass-transformer": "^1.4.0"
   },
